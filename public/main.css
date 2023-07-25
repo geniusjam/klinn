@@ -1,0 +1,534 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+
+    font-size: 120%;
+    font-family: 'Roboto', sans-serif;
+}
+
+overlay {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(250, 250, 250, 1);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+patients, patient-page, overlay {
+    display: none;
+}
+
+input {
+    border: none;
+    background: none;
+    border-bottom: lightblue 3px solid;
+    outline: none;
+    font-size: inherit;
+}
+
+textarea {
+    background: inherit;
+    font-size: inherit;
+    font-family: inherit;
+    resize: vertical;
+    min-width: 40vw;
+    outline: none;
+    border: none;
+    border-bottom: lightblue 3px solid;
+}
+
+button {
+    outline: none;
+    background: none;
+    color: white;
+    background-color: rgb(83, 183, 223);
+    font-size: inherit;
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+}
+
+box button, button.green {
+    background-color: rgb(22, 151, 76);
+}
+
+button.red {
+    background-color: rgb(204, 56, 29);
+}
+
+medics {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+}
+
+flex {
+    display: flex;
+    justify-content: center;
+}
+
+fixed {
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+login overlay flex {
+    margin-top: 1rem;
+}
+
+input:focus, textarea:focus:not(.enotes):not(.bgnotes) {
+    transition: 0.1s;
+    border-bottom-color: rgb(106, 155, 172);
+}
+
+h3 {
+    text-align: center;
+}
+
+structures {
+    display: none;
+}
+
+patient {
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+    margin: 0.3em 0;
+    background-color: rgb(255, 238, 231);
+}
+
+patients {
+    flex-direction: column;
+    height: 100%;
+}
+
+patients header small {
+    display: block;
+    margin: 0;
+    padding: 0.1em;
+    background-color: rgb(255, 238, 231);
+}
+
+patients-list {
+    display: block;
+    flex-grow: 1;
+    overflow: auto;
+}
+
+h2, .mid, .foot {
+    margin: 0.1em 0;
+}
+
+h2 {
+    font-size: 200%;
+    font-weight: 400;
+}
+
+patient-page {
+    flex-direction: column;
+    height: 100%;
+}
+
+patient-page row {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+}
+
+patient-page row visits {
+    flex-shrink: 1;
+    padding: 0 0.4em;
+    display: flex;
+    background-color: rgb(255, 238, 231);
+    border-right: 2px solid gray;
+    flex-direction: column;
+}
+
+patient-page row patient-details {
+    padding: 1em;
+    padding-bottom: 0;
+    background-color: rgb(238, 238, 231);
+}
+
+patient-page patient-details info {
+    display: flex;
+    flex-direction: row;
+}
+
+patient-page patient-details info column {
+    flex-grow: 1;
+}
+
+patient-page patient-details info buttons {
+    flex-shrink: 1;
+}
+
+patient-page patient-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+patient-page patient-details visit {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+patient-details visit tabs {
+    display: block;
+}
+
+patient-details visit fields {
+    flex-grow: 1;
+    background-color: rgb(228, 228, 231);
+}
+
+complaint-tab, vitals-tab, bglab-tab, exam-tab, pharmacy-tab {
+    overflow: auto;
+    display: none;
+    height: 100%;
+    width: 100%;
+}
+
+patient-page row visits {
+    text-align: center;
+}
+
+patient-page header patient, patient-page header patient h2 {
+    margin-top: 0;
+}
+
+patient-page header patient, patient-page header patient p.foot {
+    margin-bottom: 0;
+}
+
+patient-page header {
+    border-bottom: 2px solid gray;
+}
+
+patient-page row, patient-page row visits, row patient-details, patient-details visit, visit fields {
+    overflow: auto;
+}
+
+visit-item {
+    cursor: pointer;
+}
+
+select {
+    font-size: inherit;
+    font-family: inherit;
+}
+
+.hidden {
+    display: none;
+}
+
+complaint-tab {
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+complaint-tab>row {
+    flex-grow: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+complaint-tab input {
+    min-width: 40vw;
+}
+
+complaint-tab>* {
+    padding-top: 2rem;
+}
+
+complaint-tab .red {
+    display: block;
+    margin-top: 2em;
+}
+
+button.gray {
+    background-color: darkgray;
+}
+
+visits button {
+    margin-bottom: 0.5em;
+}
+
+visits infobox {
+    margin: 0.3em 0;
+}
+
+visit-item {
+    border-bottom: 2px gray solid;
+    display: block;
+    text-align: center;
+    cursor: pointer;
+}
+
+visit-item.selected {
+    background-color: rgb(235, 218, 211);
+}
+
+visit-item p {
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+
+table, tr, td {
+    border: none;
+    padding: 0.2em;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+
+vitals-tab td.left {
+    text-align: right;
+}
+
+vitals-tab {
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+vitals-tab>* {
+    padding-top: 2rem;
+}
+
+vitals-tab input {
+    width: 100px;
+}
+
+
+exam-tab {
+    flex-direction: column;
+}
+
+exam-tab div row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+exam-tab input {
+    width: 30vw;
+}
+
+exam-tab>* {
+    padding: 2rem;
+}
+
+.enotes, .bgnotes {
+    border: lightblue 3px solid;
+    resize: both;
+}
+
+visits-list {
+    overflow: auto;
+}
+
+patients header {
+    display: flex;
+    flex-direction: column;
+}
+
+patients header>div {
+    display: flex;
+    justify-content: center;
+
+    margin: 0.5em 0;
+}
+
+patients header button {
+    flex-shrink: 0;
+    margin: 0 0.5em;
+}
+
+patients header #online { /* span */
+    margin-right: 0.2em;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+}
+
+patients header input {
+    width: 100%;
+    margin: 0 2em;
+}
+
+bglab-tab {
+    display: flex;
+    flex-direction: column;
+}
+
+bglab-tab>h2 {
+    margin-left: 1em;
+    margin-top: 2em;
+}
+
+bglab-tab>div {
+    margin: 2em 2em;
+    display: flex;
+    flex-direction: column;
+}
+
+bglab-tab>div>div {
+    display: flex;
+    flex-direction: row;
+}
+
+bglab-tab>div>div>div {
+    flex-grow: 1;
+}
+
+treatments-list, medications-list {
+    width: 100%;
+}
+
+medication {
+    display: flex;
+    flex-direction: row;
+}
+
+medication>.top {
+    flex-grow: 1;
+}
+
+medication>*:not(.top) {
+    display: flex;
+    flex-direction: column;
+
+    text-align: center;
+    padding: 0 0.5em;
+}
+
+medication>.top>.shrink {
+    flex-grow: 0;
+    flex-shrink: 1;
+}
+
+medication not-counted, medication not-filled {
+    display: flex;
+    align-items: center;
+    padding: 0 1em;
+}
+
+medication counted, medication filled {
+    display: none;
+}
+
+treatment, medication {
+    margin-bottom: 2em;
+}
+
+treatment, medication>.top {
+    display: flex;
+    flex-direction: column;
+}
+
+treatment row, medication>.top row {
+    display: flex;
+    flex-direction: row;
+}
+
+treatment row column:not(.shrink), medication>.top row column:not(.shrink) {
+    flex-grow: 1;
+}
+
+treatment row column.shrink, medication>.top row column.shrink {
+    flex-shrink: 1;
+}
+
+treatment row.foot input {
+    min-width: 70%;
+    margin-left: 0.5em;
+}
+
+treatment row input {
+    margin-left: 0.5em;
+}
+
+treatment row.foot, medication>.top row.foot {
+    margin-top: 0.5em;
+}
+
+@media screen and (max-width: 650px) {
+    vitals-tab {
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    vitals-tab>* {
+        padding-top: 0;
+        padding-bottom: 2rem;
+    }
+
+    medics {
+        flex-direction: column;
+    }
+
+    patient-page row visits, row patient-details {
+        padding: 0 !important;
+    }
+}
+
+@media screen and (max-width: 720px) {
+    exam-tab div row {
+        flex-direction: column;
+    }
+
+    medication {
+        flex-direction: column;
+    }
+
+    exam-tab input {
+        width: 92%;
+    }
+
+    .enotes {
+        width: 95%;
+    }
+
+    img {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    bglab-tab>div {
+        margin: 1em 0;
+    }
+
+    bglab-tab>div>div {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    bglab-tab h2 {
+        margin: 0;
+        text-align: center;
+    }
+
+    complaint-tab>row {
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    patients header input {
+        margin: 0 0.4em;
+    }
+}
