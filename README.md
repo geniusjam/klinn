@@ -28,4 +28,5 @@ The reports include:
 * Diagnostics
 * Complaints
 * Medication
+
 both in numbers and in percantages. If a patient has more than one diagnoses, you can seperate them by a comma, so that the diagnoses appear seperately on the reports.
