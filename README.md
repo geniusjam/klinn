@@ -15,12 +15,12 @@ It was designed for mobile clinics in rural areas, where there may be no interne
 * Responsive design. Use the application on mobile (It's a bit of a WIP but the design is currently bearable)
 * Open source!
 
-## Usage
+## Usage
 Klinn utilizes a server-client model. Both the server and the clients have to be on the same network in order for them to communicate and sync data.
 
 You can add accounts into the `accounts` table in the database if you want to customize the accounts. Otherwise, default accounts will be used.
 
-## Reports
+## Reports
 The reports include:
 * Number of visits
 * Gender distribution
