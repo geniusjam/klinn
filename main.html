@@ -523,32 +523,38 @@
                 csv += 'Diagnostics,,\n';
                 const diagnoses = {};
                 visits.forEach(visit => {
-                    const ds = visit.diagnosis.toLowerCase().split(/, ?/g);
+                    const comma = visit.diagnosis.toLowerCase().split(/, ?/g);
+                    const list = visit.diagnosis.toLowerCase().split(/ ?\d+\. ?/g).filter(q => q);
+                    const ds = list.length > comma.length ? list : comma;
                     ds.forEach(d => {
                         if (diagnoses[d]) diagnoses[d]++;
                         else diagnoses[d] = 1;
                     });
                 });
 
-                Object.keys(diagnoses).forEach(key => {
+                Object.keys(diagnoses).sort((a,b) => (diagnoses[a] > diagnoses[b] ? -1 : 1)).forEach(key => {
                     const count = diagnoses[key];
-                    csv += `${key.charAt(0).toUpperCase()}${key.slice(1)},${count},${Math.floor(count/visits.length*100*100)/100}%\n`;
+                    key = key.replace(/\"/g, "\"\"");
+                    csv += `"${key.charAt(0).toUpperCase()}${key.slice(1)}",${count},${Math.floor(count/visits.length*100*100)/100}%\n`;
                 });
                 
                 csv += ',,\n';
                 csv += 'Complaints,,\n';
                 const complaints = {};
                 visits.forEach(visit => {
-                    const ds = visit.complaint.toLowerCase().split(/, ?/g);
+                    const comma = visit.complaint.toLowerCase().split(/, ?/g);
+                    const list = visit.complaint.toLowerCase().split(/ ?\d+\. ?/g).filter(q => q);
+                    const ds = list.length > comma.length ? list : comma;
                     ds.forEach(d => {
                         if (complaints[d]) complaints[d]++;
                         else complaints[d] = 1;
                     });
                 });
 
-                Object.keys(complaints).forEach(key => {
+                Object.keys(complaints).sort((a,b) => (complaints[a] > complaints[b] ? -1 : 1)).forEach(key => {
                     const count = complaints[key];
-                    csv += `${key.charAt(0).toUpperCase()}${key.slice(1)},${count},${Math.floor(count/visits.length*100*100)/100}%\n`;
+                    key = key.replace(/\"/g, "\"\"");
+                    csv += `"${key.charAt(0).toUpperCase()}${key.slice(1)}",${count},${Math.floor(count/visits.length*100*100)/100}%\n`;
                 });
                 
                 csv += ',,\n';
@@ -562,9 +568,10 @@
                     });
                 });
 
-                Object.keys(medication).forEach(key => {
+                Object.keys(medication).sort((a,b) => (medication[a] > medication[b] ? -1 : 1)).forEach(key => {
                     const count = medication[key];
-                    csv += `${key.charAt(0).toUpperCase()}${key.slice(1)},${count},${Math.floor(count/visits.length*100*100)/100}%\n`;
+                    key = key.replace(/\"/g, "\"\"");
+                    csv += `"${key.charAt(0).toUpperCase()}${key.slice(1)}",${count},${Math.floor(count/visits.length*100*100)/100}%\n`;
                 });
                 
                 download('report.csv', csv);
@@ -691,6 +698,7 @@
 
                 if (input.type === "date") {
                     // handle date
+                    if (!value) return input.value = '';
                     const date = (new Date(+value));
                     input.value = fourDigits(date.getUTCFullYear()) + '-' + twoDigits(1+date.getMonth()) + '-' + twoDigits(date.getDate());
                     return;
