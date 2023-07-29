@@ -112,9 +112,9 @@ io.on("connection", async socket => {
     });
 
     socket.on("new medication", async data => {
-        if (!account || !data || typeof data.id !== "number" || !data.visit || !data.patient) return; // TODO: type checking
+        if (!account || !data || typeof data.id !== "number" || !data.visit || !data.patient || !data.createdAt) return; // TODO: type checking
 
-        const med = await db.createMedication(data.id, data.patient, data.visit);
+        const med = await db.createMedication(data.id, data.patient, data.visit, data.createdAt);
 
         sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("new medication", med)); // partial
     });

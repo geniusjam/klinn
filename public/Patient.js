@@ -7,9 +7,11 @@ class Medication {
         this.dose = data.dose || "";
         this.dispense = data.dispense || "";
         this.countedBy = data.countedBy || "";
-        this.countedAt = data.countedAt || "";
+        this.countedAt = data.countedAt;
         this.filledBy = data.filledBy || "";
-        this.filledAt = data.filledAt || "";
+        this.filledAt = data.filledAt;
+        this.lastEditedAt = data.lastEditedAt || data.createdAt || Date.now();
+        this.createdAt = data.createdAt || Date.now();
     }
 }
 
@@ -17,7 +19,7 @@ class Visit {
     constructor(data) {
         this.id = data.id;
         this.patient = data.patient;
-        this.date = data.date; // is string
+        this.date = data.date;
         this.createdBy = data.createdBy;
         this.complaint = data.complaint || "";
         this.complaintNotes = data.complaintNotes || "";
@@ -36,6 +38,7 @@ class Visit {
         this.examNotes = data.examNotes || "";
         this.diagnosis = data.diagnosis || "";
         this.diagnosisNotes = data.diagnosisNotes || "";
+        this.lastEditedAt = data.lastEditedAt || data.createdAt || Date.now();
 
         /** @type {Medication[]} */
         this.pharmacy = [];
@@ -64,6 +67,7 @@ class Patient {
         this.waitedFor = data.waitedFor || 0;
         this.isWaiting = typeof data.isWaiting === "undefined" ? true : data.isWaiting;
         this.whereis = data.whereis || 0;
+        this.lastEditedAt = data.lastEditedAt || data.createdAt || Date.now();
 
         /** @type {Visit[]} */
         this.visits = [];

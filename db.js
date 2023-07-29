@@ -8,13 +8,26 @@ const init = async () => {
     });
 
     await db.exec("CREATE TABLE IF NOT EXISTS accounts (name TEXT, id TEXT, password TEXT);");
-    await db.exec("CREATE TABLE IF NOT EXISTS patients (id TEXT PRIMARY KEY, name TEXT, lastname TEXT, gender INTEGER, createdBy TEXT, photo TEXT,"
-        + "birthdate INTEGER, createdAt TEXT, waitedFor INTEGER, isWaiting INTEGER, whereis INTEGER);");
-    await db.exec("CREATE TABLE IF NOT EXISTS visits (id INTEGER, patient TEXT, date TEXT, createdBy TEXT, "
+    await db.exec("CREATE TABLE IF NOT EXISTS patients (id TEXT PRIMARY KEY, name TEXT, lastname TEXT, gender INTEGER, createdBy TEXT, photo TEXT, lastEditedAt INTEGER, "
+        + "birthdate INTEGER, createdAt INTEGER, waitedFor INTEGER, isWaiting INTEGER, whereis INTEGER);");
+    await db.exec("CREATE TABLE IF NOT EXISTS visits (id INTEGER, patient TEXT, date INTEGER, createdBy TEXT, lastEditedAt INTEGER, "
         + "complaint TEXT, complaintNotes TEXT, vitalsTemp REAL, vitalsWeight INTEGER, vitalsHeight INTEGER, vitalsHeartRate INTEGER, vitalsBPA INTEGER, vitalsBPB INTEGER, vitalsO2 INTEGER, vitalsRespRate INTEGER, "
         + "bgResults TEXT, bgDate TEXT, bgNotes TEXT, examDoctor TEXT, examNotes TEXT, diagnosis TEXT, diagnosisNotes TEXT);");
-    await db.exec("CREATE TABLE IF NOT EXISTS pharmacy (id INTEGER, patient TEXT, visit INTEGER, drug TEXT, dispense INTEGER, dose TEXT, "
+    await db.exec("CREATE TABLE IF NOT EXISTS pharmacy (id INTEGER, patient TEXT, visit INTEGER, drug TEXT, dispense INTEGER, dose TEXT, lastEditedAt INTEGER, createdAt INTEGER, "
         + "countedBy TEXT, countedAt TEXT, filledBy TEXT, filledAt TEXT);");
+    
+    // addColumn method for those databases which are not being created for the first time
+    // but don't have the required columns.
+    async function addColumn(table, name, type) {
+        const cols = await db.all(`PRAGMA table_info(${table})`);
+        if (cols.find(c => c.name === name)) return;
+        await db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${type};`);
+    }
+
+    await addColumn('patients', 'lastEditedAt', 'INTEGER');
+    await addColumn('visits', 'lastEditedAt', 'INTEGER');
+    await addColumn('pharmacy', 'lastEditedAt', 'INTEGER');
+    await addColumn('pharmacy', 'createdAt', 'INTEGER');
 
     // TODO: make accounts dynamic
     const accounts = await db.all("SELECT * FROM accounts");
@@ -35,8 +48,8 @@ const init = async () => {
     }
 
     async function createPatient(id, name, lastname, gender, createdBy, birthdate, createdAt) {
-        await db.run("INSERT INTO patients(id,name,lastname,gender,createdBy,birthdate,createdAt) VALUES (?,?,?,?,?,?,?)",
-            id, name, lastname, gender, createdBy, birthdate, createdAt);
+        await db.run("INSERT INTO patients(id,name,lastname,gender,createdBy,birthdate,createdAt,lastEditedAt) VALUES (?,?,?,?,?,?,?,?)",
+            id, name, lastname, gender, createdBy, birthdate, createdAt, createdAt);
 
         return { id, name, lastname, gender, createdBy, birthdate, createdAt }; // partial patient
     }
@@ -48,15 +61,15 @@ const init = async () => {
     async function createVisit(id, patient, createdBy, createdAt) {
         if (!(await db.get("SELECT name FROM patients WHERE id = ?", patient))) throw "No such patient.";
 
-        await db.run("INSERT INTO visits(id,patient,date,createdBy) VALUES (?,?,?,?);", id, patient, createdAt, createdBy);
+        await db.run("INSERT INTO visits(id,patient,date,createdBy,lastEditedAt) VALUES (?,?,?,?,?);", id, patient, createdAt, createdBy, createdAt);
 
         return { id, date: createdAt, patient, createdBy }; // partial visit
     }
 
-    async function createMedication(id, patient, visit) {
-        await db.run("INSERT INTO pharmacy(id,patient,visit) VALUES (?,?,?);", id, patient, visit);
+    async function createMedication(id, patient, visit, createdAt) {
+        await db.run("INSERT INTO pharmacy(id,patient,visit,createdAt) VALUES (?,?,?,?);", id, patient, visit, createdAt);
 
-        return { id, patient, visit };
+        return { id, patient, visit, createdAt };
     }
 
     async function getVisitsOf(patient) {

@@ -576,7 +576,7 @@
                 const gender = $('patients overlay input[type="radio"][value="0"]').checked ? 0
                     : $('patients overlay input[type="radio"][value="1"]').checked ? 1 : 2;
                 const birthdate = parseInt($('patients overlay input[type="date"]').value.replace(/-/g, ""));
-                const createdAt = Date.now()+"";
+                const createdAt = Date.now();
                 const createdBy = account.id;
                 const id = generatePatientId();
 
@@ -635,8 +635,7 @@
             };
 
             $("visits button").onclick = () => { // New Visit
-                // treat createdAt as text.
-                const createdAt = Date.now() + "";
+                const createdAt = Date.now();
                 const id = currentPatient.nextVisitID();
 
                 const visit = new Visit({ id, date: createdAt, createdBy: account.id, patient: currentPatient.id });
@@ -771,7 +770,7 @@
                         val = 0;
                     }
                     if (input.type === "date" && val) {
-                        val = (new Date(val)).getTime()+"";
+                        val = (new Date(val)).getTime();
                     }
                     if (val === currentVisit[field]) return; // no change
 
@@ -857,16 +856,17 @@
             }
 
             $('exam-tab h2 button').onclick = function() { // Add Treatment
-                const med = new Medication({ patient: currentPatient.id, visit: currentVisit.id, id: currentVisit.nextMedicationID() });
+                const createdAt = Date.now();
+                const med = new Medication({ createdAt, patient: currentPatient.id, visit: currentVisit.id, id: currentVisit.nextMedicationID() });
                 currentVisit.pharmacy.push(med);
                 addTreatmentStructure(med);
                 addMedicationStructure(med);
 
-                socket.emit("new medication", { patient: med.patient, visit: med.visit, id: med.id });
+                socket.emit("new medication", { createdAt, patient: med.patient, visit: med.visit, id: med.id });
             }
 
-            socket.on("new medication", ({ id, patient, visit }) => {
-                const med = new Medication({ patient: currentPatient.id, visit: currentVisit.id, id: currentVisit.nextMedicationID() });
+            socket.on("new medication", ({ id, patient, visit, createdAt }) => {
+                const med = new Medication({ createdAt, patient: currentPatient.id, visit: currentVisit.id, id: currentVisit.nextMedicationID() });
                 patients.find(p => p.id === patient).visits.find(v => v.id === visit).pharmacy.push(med);
 
                 if (currentPatient && currentVisit && currentPatient.id === patient && currentVisit.id === visit) {
@@ -1188,7 +1188,7 @@
                 medication.innerHTML = $('structures medication').innerHTML;
                 medication.querySelector('not-counted button').onclick = () => { // Count
                     med.countedBy = account.id;
-                    med.countedAt = Date.now()+"";
+                    med.countedAt = Date.now();
 
                     medication.querySelector('counted .mid').innerText = account.name;
                     medication.querySelector('counted .foot').innerText = fourDigits((new Date()).getUTCFullYear()) + '/' + twoDigits(1+(new Date()).getMonth()) + '/' + twoDigits((new Date()).getDate());
@@ -1210,7 +1210,7 @@
                 };
                 medication.querySelector('not-filled button').onclick = () => { // Fill
                     med.filledBy = account.id;
-                    med.filledAt = Date.now()+"";
+                    med.filledAt = Date.now();
 
                     medication.querySelector('filled .mid').innerText = account.name;
                     medication.querySelector('filled .foot').innerText = fourDigits((new Date()).getUTCFullYear()) + '/' + twoDigits(1+(new Date()).getMonth()) + '/' + twoDigits((new Date()).getDate());
