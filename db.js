@@ -104,8 +104,8 @@ const init = async () => {
         await db.run(`UPDATE visits SET ${field} = ? WHERE id = ? AND patient = ?`, value, visit, patient);
     }
 
-    async function updatePatient(id, name, lastname, gender, birthdate) {
-        await db.run(`UPDATE patients SET name = ?, lastname = ?, gender = ?, birthdate = ? WHERE id = ?`, name, lastname, gender, birthdate, id);
+    async function updatePatient(id, name, lastname, gender, birthdate, isWaiting, whereis) {
+        await db.run(`UPDATE patients SET name = ?, lastname = ?, gender = ?, birthdate = ?, isWaiting = ?, whereis = ? WHERE id = ?`, name, lastname, gender, birthdate, isWaiting, whereis, id);
     }
 
     async function deleteVisit(id, patient) {

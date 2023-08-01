@@ -65,7 +65,7 @@ class Patient {
         this.birthdate = data.birthdate;
         this.createdAt = data.createdAt;
         this.waitedFor = data.waitedFor || 0;
-        this.isWaiting = typeof data.isWaiting === "undefined" ? true : data.isWaiting;
+        this.isWaiting = data.isWaiting || 0;
         this.whereis = data.whereis || 0;
         this.lastEditedAt = data.lastEditedAt || data.createdAt || Date.now();
 

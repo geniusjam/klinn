@@ -328,7 +328,7 @@ exam-tab input {
 }
 
 exam-tab>* {
-    padding: 2rem;
+    padding: 1.5rem;
 }
 
 .enotes, .bgnotes {

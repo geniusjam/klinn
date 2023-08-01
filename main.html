@@ -105,11 +105,11 @@
                     <info>
                         <column>
                             <p> 📅 <span> Please select a visit. </span> </p>
-                            <p class="hidden">
+                            <p>
                                 <select>
-                                    <option value="1"> Waiting </option>
                                     <option value="0"> Being Seen </option>
-                                </select> in <select>
+                                    <option value="1"> Waiting </option>
+                                </select> in <select class="whereis">
                                     <option value="0"> Complaint </option>
                                     <option value="1"> History </option>
                                     <option value="2"> Vitals </option>
@@ -621,6 +621,9 @@
                 $("patient-details info span").innerText = 'Please select a visit.';
                 $("patient-page header patient").innerHTML = $("structures patient").innerHTML;
 
+                $("patient-details select").value = currentPatient.isWaiting;
+                $("patient-details .whereis").value = currentPatient.whereis;
+
                 $("visits infobox span").innerText = patient.visits.length;
                 $("visits-list").innerHTML = "";
                 patient.visits.forEach(visit => addVisitItemStructure(visit));
@@ -640,6 +643,13 @@
                 $("patient-page").style.display = "none";
                 $("patients").style.display = "flex";
             };
+
+            $all("patient-details select").forEach(el => el.onchange = function() {
+                const field = this.classList.contains("whereis") ? "whereis" : "isWaiting";
+                currentPatient[field] = +this.value;
+                const { id, name, lastname, gender, birthdate, whereis, isWaiting } = currentPatient;
+                socket.emit("upd patient", { id, name, lastname, gender, birthdate, whereis, isWaiting });
+            });
 
             $("visits button").onclick = () => { // New Visit
                 const createdAt = Date.now();
@@ -976,17 +986,19 @@
                 }
 
 
-                socket.emit("upd patient", { id: currentPatient.id, name, lastname, gender, birthdate });
+                socket.emit("upd patient", { id: currentPatient.id, name, lastname, gender, birthdate, whereis: currentPatient.whereis, isWaiting: currentPatient.isWaiting });
 
                 $('patient-page overlay').style.display = 'none';
             };
 
-            socket.on("upd patient", ({ id, name, lastname, gender, birthdate }) => {
+            socket.on("upd patient", ({ id, name, lastname, gender, birthdate, whereis, isWaiting }) => {
                 const patient = patients.find(p => p.id === id);
                 patient.name = name;
                 patient.lastname = lastname;
                 patient.gender = gender;
                 patient.birthdate = birthdate;
+                patient.whereis = whereis;
+                patient.isWaiting = isWaiting;
 
                 const el = $('patients-list patient[patient-id="' + id + '"]');
                 if (el) {
@@ -1002,6 +1014,9 @@
                     // update patient-page patient html:
                     preparePatientStructure(currentPatient);
                     $('patient-page patient').innerHTML = $('structures patient').innerHTML;
+
+                    $("patient-details select").value = currentPatient.isWaiting;
+                    $("patient-details .whereis").value = currentPatient.whereis;
                 }
             });
 

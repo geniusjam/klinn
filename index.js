@@ -148,9 +148,11 @@ io.on("connection", async socket => {
     socket.on("upd patient", async data => {
         if (!account || !data || !data.id || typeof data.name !== "string" || typeof data.lastname !== "string" || typeof data.gender !== "number"
             || typeof data.birthdate !== "number") return;
+        if (!data.isWaiting) data.isWaiting = 0;
+        if (!data.whereis) data.whereis = 0;
         // TODO: type checking for data.id
 
-        await db.updatePatient(data.id, data.name, data.lastname, data.gender, data.birthdate);
+        await db.updatePatient(data.id, data.name, data.lastname, data.gender, data.birthdate, data.isWaiting, data.whereis);
 
         // send update to subscribers
         sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("upd patient", data)); // TODO: some kind of data sanitization for "data"?
