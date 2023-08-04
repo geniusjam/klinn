@@ -10,7 +10,7 @@ class Medication {
         this.countedAt = data.countedAt;
         this.filledBy = data.filledBy || "";
         this.filledAt = data.filledAt;
-        this.lastEditedAt = data.lastEditedAt || data.createdAt || Date.now();
+        this.lastEditedAt = data.lastEditedAt || data.createdAt || Date.now();
         this.createdAt = data.createdAt || Date.now();
     }
 }
