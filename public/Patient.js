@@ -38,6 +38,7 @@ class Visit {
         this.examNotes = data.examNotes || "";
         this.diagnosis = data.diagnosis || "";
         this.diagnosisNotes = data.diagnosisNotes || "";
+        this.referredToHospital = data.referredToHospital || false;
         this.lastEditedAt = data.lastEditedAt || data.createdAt || Date.now();
 
         /** @type {Medication[]} */

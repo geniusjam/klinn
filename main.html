@@ -251,6 +251,9 @@
                                         <input placeholder="Diagnosis Notes" class="ediagnosisnotes" autocomplete="off" />
                                     </row>
                                 </div>
+                                <div class="mid">
+                                    <p> <input type="checkbox" /> Patient was referred to the hospital. </p>
+                                </div>
                                 <div>
                                     <h2> Treatment Plan <button> Add </button> </h2>
                                     <treatments-list>
@@ -511,6 +514,7 @@
                 let csv = `"Dates ${fromDate.toLocaleDateString('en', { month: "short", year: "numeric", day: "numeric" })} - ${untilDate.toLocaleDateString('en', { month: "short", year: "numeric", day: "numeric" })}",,\n`;
                 csv += ',,\n'
                 csv += `Number of Visits,${visits.length},\n`;
+                csv += `Referred to the hospital,${visits.filter(v => v.referredToHospital).length},\n`;
                 csv += ',,\n'
                 csv += 'Gender distribution,,\n'
                 GENDERS.forEach((g, i) => {
@@ -725,6 +729,11 @@
                     return;
                 }
 
+                if (input.type === "checkbox") {
+                    input.checked = value ? true : false;
+                    return;
+                }
+
                 if (value === 0) input.value = '';
                 else input.value = value;
             }
@@ -753,7 +762,8 @@
                 [$('exam-tab .edoctor'), "examDoctor"],
                 [$('exam-tab .enotes'), "examNotes"],
                 [$('exam-tab .ediagnosis'), "diagnosis"],
-                [$('exam-tab .ediagnosisNotes'), "diagnosisNotes"]
+                [$('exam-tab .ediagnosisNotes'), "diagnosisNotes"],
+                [$('exam-tab input[type="checkbox"]'), "referredToHospital"],
             ].forEach(([a,b]) => tieTo(a, b));
 
             socket.on("upd visit", ({ field, value, visit: visitId, patient: patientId }) => {
@@ -762,11 +772,16 @@
                 visit[field] = value;
                 if (currentVisit && currentPatient && currentVisit.id === visit.id && currentPatient.id === patient.id) {
                     // it's the current visit... we need to update the input
-                    inputsByField[field].value = (typeof value === "number" && value === 0) ? '' : value;
-                    if (inputsByField[field].type === "date") {
+                    const input = inputsByField[field];
+                    input.value = (typeof value === "number" && value === 0) ? '' : value;
+                    if (input.type === "date") {
                         // handle date
                         const date = (new Date(+value));
                         input.value = fourDigits(date.getUTCFullYear()) + '-' + twoDigits(1+date.getMonth()) + '-' + twoDigits(date.getDate());
+                    }
+
+                    if (input.type === "checkbox") {
+                        input.checked = value ? true : false;
                     }
                 }
             });
@@ -798,6 +813,7 @@
                     if (typeof currentVisit[field] === "number" && val === '') {
                         val = 0;
                     }
+                    if (input.type === "checkbox") val = input.checked ? 1 : 0;
                     if (input.type === "date" && val) {
                         val = (new Date(val)).getTime();
                     }

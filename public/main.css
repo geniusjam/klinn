@@ -323,7 +323,15 @@ exam-tab div row {
     justify-content: space-around;
 }
 
-exam-tab input {
+exam-tab .mid {
+    padding-bottom: 0;
+}
+
+exam-tab .mid p {
+    margin-bottom: 0;
+}
+
+exam-tab input:not(input[type="checkbox"]) {
     width: 30vw;
 }
 

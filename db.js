@@ -12,7 +12,8 @@ const init = async () => {
         + "birthdate INTEGER, createdAt INTEGER, waitedFor INTEGER, isWaiting INTEGER, whereis INTEGER);");
     await db.exec("CREATE TABLE IF NOT EXISTS visits (id INTEGER, patient TEXT, date INTEGER, createdBy TEXT, lastEditedAt INTEGER, "
         + "complaint TEXT, complaintNotes TEXT, vitalsTemp REAL, vitalsWeight INTEGER, vitalsHeight INTEGER, vitalsHeartRate INTEGER, vitalsBPA INTEGER, vitalsBPB INTEGER, vitalsO2 INTEGER, vitalsRespRate INTEGER, "
-        + "bgResults TEXT, bgDate TEXT, bgNotes TEXT, examDoctor TEXT, examNotes TEXT, diagnosis TEXT, diagnosisNotes TEXT);");
+        + "bgResults TEXT, bgDate TEXT, bgNotes TEXT, examDoctor TEXT, examNotes TEXT, diagnosis TEXT, diagnosisNotes TEXT, "
+        + "referredToHospital INTEGER);");
     await db.exec("CREATE TABLE IF NOT EXISTS pharmacy (id INTEGER, patient TEXT, visit INTEGER, drug TEXT, dispense INTEGER, dose TEXT, lastEditedAt INTEGER, createdAt INTEGER, "
         + "countedBy TEXT, countedAt TEXT, filledBy TEXT, filledAt TEXT);");
     
@@ -28,6 +29,8 @@ const init = async () => {
     await addColumn('visits', 'lastEditedAt', 'INTEGER');
     await addColumn('pharmacy', 'lastEditedAt', 'INTEGER');
     await addColumn('pharmacy', 'createdAt', 'INTEGER');
+
+    await addColumn('visits', 'referredToHospital', 'INTEGER'); // bolean // whether the patient was referred to the hospital
 
     // TODO: make accounts dynamic
     const accounts = await db.all("SELECT * FROM accounts");
