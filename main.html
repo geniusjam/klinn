@@ -536,6 +536,7 @@
                     const list = visit.diagnosis.toLowerCase().split(/ ?\d+\. ?/g).filter(q => q);
                     const ds = list.length > comma.length ? list : comma;
                     ds.forEach(d => {
+                        d = d.trim();
                         if (diagnoses[d]) diagnoses[d]++;
                         else diagnoses[d] = 1;
                     });
@@ -555,6 +556,7 @@
                     const list = visit.complaint.toLowerCase().split(/ ?\d+\. ?/g).filter(q => q);
                     const ds = list.length > comma.length ? list : comma;
                     ds.forEach(d => {
+                        d = d.trim();
                         if (complaints[d]) complaints[d]++;
                         else complaints[d] = 1;
                     });
@@ -571,7 +573,7 @@
                 const medication = {};
                 visits.forEach(visit => {
                     visit.pharmacy.forEach(med => {
-                        const d = med.drug.toLowerCase();
+                        const d = med.drug.toLowerCase().trim();
                         if (medication[d]) medication[d]++;
                         else medication[d] = 1;
                     });
