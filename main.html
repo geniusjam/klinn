@@ -517,7 +517,7 @@
                 csv += `Referred to the hospital,${visits.filter(v => v.referredToHospital).length},\n`;
                 csv += ',,\n'
                 csv += 'Gender distribution,,\n'
-                GENDERS.forEach((g, i) => {
+                GENDERS.filter((q, i) => i !== 2).forEach((g, i) => {
                     let count = visits.map(v => patients.find(p => p.id === v.patient).gender).filter(a => a===i).length;
                     csv += `${GENDERS[i]},${count},${Math.floor(count/visits.length*100*100)/100}%\n`;
                 });
