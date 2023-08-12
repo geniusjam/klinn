@@ -127,6 +127,7 @@
                     </info>
                     <visit>
                         <tabs>
+                            <button class="history"> History </button>
                             <button class="complaint"> Complaint </button>
                             <button class="vitals"> Vitals </button>
                             <button class="bglab"> BG Lab </button>
@@ -134,6 +135,14 @@
                             <button class="pharmacy"> Pharmacy </button>
                         </tabs>
                         <fields>
+                            <history-tab>
+                                <h1> Antecedents </h1>
+                                <h2> Medical </h2>
+                                <h2> Surgical </h2>
+                                <h2> Traumatic </h2>
+                                <h2> Allergic </h2>
+                                <h2> Hereditary </h2>
+                            </history-tab>
                             <complaint-tab>
                                 <row>
                                     <div>
@@ -341,7 +350,7 @@
             const socket = io("/");
             
             const tabButtons = $('visit tabs').children;
-            const tabs = [ $("complaint-tab"), $("vitals-tab"), $("bglab-tab"), $("exam-tab"), $("pharmacy-tab") ];
+            const tabs = [ $("complaint-tab"), $("vitals-tab"), $("bglab-tab"), $("exam-tab"), $("pharmacy-tab"), $("history-tab") ];
 
             const GENDERS = [ "Male", "Female", "Other" ];
             let PAGEN = 25;
@@ -1144,6 +1153,16 @@
                 if (!currentVisit) return;
                 tabs.forEach(tab => tab.style.display = 'none');
                 tabs[4].style.display = 'flex';
+
+                for (const btn of tabButtons) {
+                    btn.classList.add("gray");
+                }
+                this.classList.remove('gray');
+            };
+
+            $("tabs .history").onclick = function() {
+                tabs.forEach(tab => tab.style.display = 'none');
+                tabs[5].style.display = 'flex';
 
                 for (const btn of tabButtons) {
                     btn.classList.add("gray");

@@ -194,11 +194,15 @@ patient-details visit fields {
     background-color: rgb(228, 228, 231);
 }
 
-complaint-tab, vitals-tab, bglab-tab, exam-tab, pharmacy-tab {
+complaint-tab, vitals-tab, bglab-tab, exam-tab, pharmacy-tab, history-tab {
     overflow: auto;
     display: none;
     height: 100%;
     width: 100%;
+}
+
+history-tab {
+    flex-direction: column;
 }
 
 patient-page row visits {
