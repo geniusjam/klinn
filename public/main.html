@@ -1,0 +1,351 @@
+<html>
+    <head>
+        <title> Klinn </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link href="roboto.css" rel="stylesheet">
+        <link rel="stylesheet" href="main.css" />
+        <script src="socket.io.js"></script>
+        <script src="Patient.js"></script>
+    </head>
+    <body>
+        <login>
+            <overlay>
+                <fixed>
+                    <button> Back </button>
+                </fixed>
+                <box>
+                    <h3>
+                        <span>Medic 1</span> Login
+                    </h3>
+                    <input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" />
+                    <flex><button> Go </button></flex>
+                </box>
+            </overlay>
+            <medics>
+            </medics>
+        </login>
+        <patients>
+            <overlay>
+                <fixed>
+                    <button> Back </button>
+                </fixed>
+                <box>
+                    <p> Name: <input type="text" autocomplete="off" /> </p>
+                    <p> Lastname: <input type="text" autocomplete="off" class="lastname" /> </p>
+                    <p> Gender: <input type="radio" name="gender" value="0" /> Male
+                        <input type="radio" name="gender" value="1" /> Female
+                        <input type="radio" name="gender" value="2" /> Other
+                    </p>
+                    <p> Birthdate: <input type="date" /> Age: <input type="number" id="ageinput0" autocomplete="off" /> </p>
+                    <button> Add Patient </button>
+                </box>
+            </overlay>
+            <overlay class="report">
+                <fixed>
+                    <button> Back </button>
+                </fixed>
+                <box>
+                    <p> From the start of: <input type="date" autocomplete="off" /> </p>
+                    <p> Until: <input type="date" autocomplete="off" class="until" /> </p>
+                    <button> Download Report </button>
+                </box>
+            </overlay>
+            <header>
+                <div>
+                    <button> 📄 </button>
+                    <input class="filter" placeholder="Filter" autocomplete="off" type="text" />
+                    <button class="new"> Add Patient </button>
+                    <span id="online"> 0 </span>
+                </div>
+                <small> <span>0</span> total patients. (<span class="today">X</span> visits today) </small>
+            </header>
+            <patients-list>
+                //
+            </patients-list>
+            <footer>
+                <div>
+                    <button> &lt; </button>
+                    <span> 1 </span>
+                    <button class="forward"> &gt; </button>
+                    <span class="foot"> 1-50 of 0 </span>
+                </div>
+            </footer>
+        </patients>
+        <patient-page>
+            <overlay>
+                <fixed>
+                    <button> Back </button>
+                </fixed>
+                <box>
+                    <p> Name: <input type="text" autocomplete="off" /> </p>
+                    <p> Lastname: <input type="text" autocomplete="off" class="lastname" /> </p>
+                    <p> Gender: <input type="radio" name="gender" value="0" /> Male
+                        <input type="radio" name="gender" value="1" /> Female
+                        <input type="radio" name="gender" value="2" /> Other
+                    </p>
+                    <p> Birthdate: <input type="date" /> Age: <input type="number" id="ageinput1" autocomplete="off" /> </p>
+                    <button> Save </button>
+                </box>
+            </overlay>
+            <header>
+                <div>
+                    <button> Back </button>
+                </div>
+                <patient></patient>
+            </header>
+            <row>
+                <visits>
+                    <infobox> <span>0</span> visits </infobox>
+                    <button class="green"> New Visit </button>
+                    <visits-list>
+                        //
+                    </visits-list>
+                </visits>
+                <patient-details>
+                    <info>
+                        <column>
+                            <p> 📅 <span> Please select a visit. </span> </p>
+                            <p>
+                                <select>
+                                    <option value="0"> Being Seen </option>
+                                    <option value="1"> Waiting </option>
+                                </select> in <select class="whereis">
+                                    <option value="0"> Complaint </option>
+                                    <option value="1"> History </option>
+                                    <option value="2"> Vitals </option>
+                                    <option value="3"> Labs </option>
+                                    <option value="4"> Glasses </option>
+                                    <option value="5"> Exam </option>
+                                    <option value="6"> Pharmacy </option>
+                                    <option value="7"> Discharge </option>
+                                </select>
+                            </p>
+                        </column>
+                        <buttons>
+                            <button class="red"> Delete Patient </button>
+                        </buttons>
+                    </info>
+                    <visit>
+                        <tabs>
+                            <button class="history"> History </button>
+                            <button class="complaint"> Complaint </button>
+                            <button class="vitals"> Vitals </button>
+                            <button class="bglab"> BG Lab </button>
+                            <button class="exam"> Exam </button>
+                            <button class="pharmacy"> Pharmacy </button>
+                        </tabs>
+                        <fields>
+                            <history-tab>
+                                <h1> Antecedents </h1>
+                                <h2> Medical </h2>
+                                <h2> Surgical </h2>
+                                <h2> Traumatic </h2>
+                                <h2> Allergic </h2>
+                                <h2> Hereditary </h2>
+                            </history-tab>
+                            <complaint-tab>
+                                <row>
+                                    <div>
+                                        <input placeholder="Chief Complaint" autocomplete="off"/>
+                                    </div>
+                                    <div> <textarea class="complaintNotes" placeholder="Complaint notes" autocomplete="off"></textarea> </div>
+                                </row>
+                                <row>
+                                    <button class="red"> Delete Visit </button>
+                                </row>
+                            </complaint-tab>
+                            <vitals-tab>
+                                <div>
+                                    <table>
+                                        <tr>
+                                            <td class="left">
+                                                Temperature
+                                            </td>
+                                            <td>
+                                                <input type="number" autocomplete="off" class="vtemp" /> C
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left">
+                                                Weight
+                                            </td>
+                                            <td>
+                                                <input type="number" autocomplete="off" class="vweight" /> kg
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left">
+                                                Height
+                                            </td>
+                                            <td>
+                                                <input type="number" autocomplete="off" class="vheight" /> cm
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left">
+                                                BMI
+                                            </td>
+                                            <td>
+                                                <span>-</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div>
+                                    <table>
+                                        <tr>
+                                            <td class="left">
+                                                Heart Rate
+                                            </td>
+                                            <td>
+                                                <input type="number" autocomplete="off" class="vhr" /> bpm
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left">
+                                                Blood Pressure
+                                            </td>
+                                            <td>
+                                                <input type="number" autocomplete="off" class="vbpa" /> /
+                                                <input type="number" autocomplete="off" class="vbpb" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left">
+                                                O2 Saturation
+                                            </td>
+                                            <td>
+                                                <input type="number" autocomplete="off" class="vo2" /> %
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left">
+                                                Respiratory Rate
+                                            </td>
+                                            <td>
+                                                <input type="number" autocomplete="off" class="vrr" /> bpm
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </vitals-tab>
+                            <bglab-tab>
+                                <h2> Blood Glucose Test (BG) </h2>
+                                <div>
+                                    <div>
+                                        <div>
+                                            Results: <input type="text" autocomplete="off" class="bgresults"/>
+                                        </div>
+                                        <div>
+                                            Completed Date: <input type="date" class="bgdate"/>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p>
+                                            <textarea placeholder="Notes" autocomplete="off" class="bgnotes" rows="5" ></textarea>
+                                        </p>
+                                    </div>
+                                </div>
+                            </bglab-tab>
+                            <exam-tab>
+                                <div>
+                                    <h2> Provider exam </h2>
+                                    <p> <input type="text" placeholder="Exam Doctor" autocomplete="off" class="edoctor" /> </p>
+                                    <p> <textarea class="enotes" cols="30" rows="10" autocomplete="off" placeholder="Exam Notes"></textarea> </p>
+                                </div>
+                                <div>
+                                    <h2> Diagnosis </h2>
+                                    <row>
+                                        <input placeholder="Diagnosis" class="ediagnosis" autocomplete="off" />
+                                        <input placeholder="Diagnosis Notes" class="ediagnosisnotes" autocomplete="off" />
+                                    </row>
+                                </div>
+                                <div class="mid">
+                                    <p> <input type="checkbox" /> Patient was referred to the hospital. </p>
+                                </div>
+                                <div>
+                                    <h2> Treatment Plan <button> Add </button> </h2>
+                                    <treatments-list>
+                                        //
+                                    </treatments-list>
+                                </div>
+                            </exam-tab>
+                            <pharmacy-tab>
+                                <medications-list>
+                                    //
+                                </medications-list>
+                            </pharmacy-tab>
+                        </fields>
+                    </visit>
+                </patient-details>
+            </row>
+        </patient-page>
+
+        <structures>
+            <patient>
+                <div>
+                    <!-- <img src="account.png" /> -->
+                </div>
+                <div>
+                    <h2> Name </h2>
+                    <p class="mid"> ID: 1234512345 - Gender </p>
+                    <p class="foot"> X years - DOB: YYYY/MM/DD </p>
+                </div>
+                <div>
+                    <!-- waiting in complaint -->
+                </div>
+            </patient>
+            <visit-item>
+                <p> Visit <span>1</span> </p>
+                <small> 2023/07/19 </small>
+            </visit-item>
+            <treatment>
+                <row>
+                    <column> Drug: <input type="text" autocomplete="off" class="mdrug" /> </column>
+                    <column> Dispense: <input autocomplete="off" type="number" class="mdispense" /> </column>
+                    <column class="shrink"> <button class="red"> - </button> </column>
+                </row>
+                <row class="foot">
+                    <column class="shrink"> Dose: </column> <column> <input type="text" autocomplete="off" class="mdose" /> </column>
+                </row>
+            </treatment>
+            <medication>
+                <div class="top">
+                    <row>
+                        <column> <b>Drug:</b> <span class="mdrug"></span> </column>
+                        <column> <b>Dispense:</b> <span class="mdispense"></span> </column>
+                    </row>
+                    <row> <column> <b>Dose:</b> <span class="mdose"></span> </column> </row>
+                </div>
+                <div>
+                    <not-counted>
+                        <button> Count </button>
+                    </not-counted>
+                    <counted>
+                        <div class="top"> <button class="red"> Uncount </button> </div>
+                        <div class="mid"> Medic X </div>
+                        <div class="foot"> 0000/00/00 </div>
+                    </counted>
+                </div>
+                <div>
+                    <not-filled>
+                        <button> Fill </button>
+                    </not-filled>
+                    <filled>
+                        <div class="top"> <button class="red"> Unfill </button> </div>
+                        <div class="mid"> Medic X </div>
+                        <div class="foot"> 0000/00/00 </div>
+                    </filled>
+                </div>
+            </medication>
+        </structures>
+        <script>
+            window.$ = (...q) => document.querySelector(...q);
+            window.$all = (...q) => document.querySelectorAll(...q);
+
+            // responsive
+            if (window.innerWidth < 400) $('patients header button.new').innerText = '+ New';
+        </script>
+        <script src="script.js"></script>
+    </body>
+</html>

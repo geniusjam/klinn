@@ -7,7 +7,7 @@ let db;
 app.use(express.static("public/"));
 
 app.get('/', function (req, res) {
-    res.sendFile(path.join(__dirname, 'main.html'));
+    res.sendFile(path.join(__dirname, 'public', 'main.html'));
 });
 
 console.log("The address is " + getIPAddress() + ":1402");
