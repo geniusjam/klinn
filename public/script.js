@@ -374,6 +374,21 @@ function buildAntecedent(type, ant) {
     for (const key in ant) {
         if (key === "patient" || key === "id") continue;
 
+        if (key === "surgery" && type === "traumatic") {
+            const select = document.createElement("select");
+            select.innerHTML = `<option value="0"> Surgery </option><option value="1"> Immobilization </option>`;
+            select.setAttribute("ant-key", key);
+            select.onchange = () => {
+                let value = +select.value;
+                if (value === ant[key]) return; // no change
+                ant[key] = value;
+                socket.emit("upd history", { type, id: ant.id, patient: ant.patient, field: key, value });
+            };
+            select.value = ant[key];
+            html.appendChild(select);
+            continue;
+        }
+
         const input = document.createElement("input");
         input.setAttribute("ant-key", key);
 
@@ -396,9 +411,7 @@ function buildAntecedent(type, ant) {
                 val = new Date(input.value.replace(/-/g, "/")).getTime();
             }
 
-            console.log("onchange", ant[key], val);
             if (ant[key] === val) return; // no change
-            console.log("changing...")
 
             ant[key] = val;
             socket.emit("upd history", { type, id: ant.id, patient: ant.patient, field: key, value: val });
@@ -423,7 +436,6 @@ function buildAntecedent(type, ant) {
 }
 
 socket.on("new history", ({ type, id, patient }) => {
-    console.log("new history", { type, id, patient });
     const pat = patients.find(p => p.id === patient);
     const Ant = ANTECEDENTALS[type];
     const ant = new Ant({ id, patient });
@@ -434,15 +446,16 @@ socket.on("new history", ({ type, id, patient }) => {
 });
 
 socket.on("upd history", ({ type, id, patient, field, value }) => {
+    console.log("upd history", {type, id, patient, field, value});
     const pat = patients.find(p => p.id === patient);
     const item = pat.history[type].find(h => h.id === id);
     item[field] = value;
 
     if (currentPatient && currentPatient.id === patient) {
-        const input = $(`antecedents.${type} antecedent[ant-id="${id}"] input[ant-key="${field}"]`);
+        const input = $(`antecedents.${type} antecedent[ant-id="${id}"] *[ant-key="${field}"]`); // might also be a select element
         if (input.type === "date") {
             const date = new Date(value);
-            input.value = fourDigits(date.getUTCFullYear()) + '-' + twoDigits(1+date.getMonth()) + '-' + twoDigits(date.getDate());
+            input.value = fourDigits(date.getFullYear()) + '-' + twoDigits(1+date.getMonth()) + '-' + twoDigits(date.getDate());
         } else input.value = value;
     }
 });

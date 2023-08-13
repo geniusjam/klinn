@@ -85,7 +85,7 @@ class TraumaticAntecedent extends Antecedent {
     constructor(data) {
         super(data);
         this.part = data.part || "";
-        this.surgery = data.surgery || "";
+        this.surgery = data.surgery || 0;
         this.date = data.date || 0;
         this.complication = data.complication || "";
     }

@@ -19,7 +19,7 @@ const init = async () => {
     // history
     await db.exec("CREATE TABLE IF NOT EXISTS history_medical (id INTEGER, patient TEXT, disease TEXT, date INTEGER, treatment TEXT)");
     await db.exec("CREATE TABLE IF NOT EXISTS history_surgical (id INTEGER, patient TEXT, surgery TEXT, date INTEGER, place TEXT, complication TEXT)");
-    await db.exec("CREATE TABLE IF NOT EXISTS history_traumatic (id INTEGER, patient TEXT, part TEXT, surgery TEXT, date INTEGER, complication TEXT)");
+    await db.exec("CREATE TABLE IF NOT EXISTS history_traumatic (id INTEGER, patient TEXT, part TEXT, surgery INTEGER, date INTEGER, complication TEXT)");
     await db.exec("CREATE TABLE IF NOT EXISTS history_allergic (id INTEGER, patient TEXT, name TEXT)");
     await db.exec("CREATE TABLE IF NOT EXISTS history_hereditary (id INTEGER, patient TEXT, relative TEXT, disease TEXT)");
     

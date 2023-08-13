@@ -128,7 +128,7 @@ io.on("connection", async socket => {
     });
 
     socket.on("upd history", async data => {
-        if (!account || !data || !data.type || !data.id || !data.patient || !data.field || !data.value) return;
+        if (!account || !data || !data.type || !data.id || !data.patient || !data.field) return;
         if (!["medical", "surgical", "traumatic", "allergic", "hereditary"].includes(data.type)) return;
         // TODO: checks for field and value for security
 

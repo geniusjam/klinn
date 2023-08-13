@@ -504,6 +504,20 @@ antecedent>* { /* both inputs and buttons */
     margin: 0.2em 1em;
 }
 
+fields select {
+    background: inherit;
+    padding: 0.1em 0.3em;
+    outline: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: lightblue 3px solid;
+}
+
+fields select:focus {
+    border-bottom-color: rgb(106, 155, 172);
+}
+
 no-data {
     display: none;
     font-style: italic;
