@@ -324,7 +324,7 @@ $("patients-list").onclick = function(event) { // display patient
     patient.visits.forEach(visit => addVisitItemStructure(visit));
 
     for (const type in patient.history) {
-        $("antecedents."+type).innerHTML = "";
+        $("antecedents."+type).innerHTML = "<no-data> None. </no-data>";
         for (const ant of patient.history[type])
             $("antecedents."+type).appendChild(buildAntecedent(type, ant));
     }
@@ -492,9 +492,9 @@ $('visits-list').onclick = function(event) { // display visit
 
     Object.keys(inputsByField).forEach(field => fillInput(field));
 
-    $('patient-details treatments-list').innerHTML = '';
+    $('patient-details treatments-list').innerHTML = '<no-data> None. </no-data>';
     visit.pharmacy.forEach(med => addTreatmentStructure(med));
-    $('patient-details medications-list').innerHTML = '';
+    $('patient-details medications-list').innerHTML = '<no-data> None. </no-data>';
     visit.pharmacy.forEach(med => addMedicationStructure(med));
 
     if (visit.vitalsHeight !== 0 && visit.vitalsWeight !== 0) { // calculate bmi
@@ -925,7 +925,7 @@ function download(filename, text) {
 function displayPatients() {
     const total = currentPatients.length;
 
-    $('patients-list').innerHTML = ''; // remove all patients
+    $('patients-list').innerHTML = '<no-data> None. </no-data>'; // remove all patients
     currentPatients.slice(currentPage*PAGEN, currentPage*PAGEN+PAGEN).forEach(p => addPatientStructure(p));
     $('patients footer span').innerText = currentPage+1;
     $('patients footer .foot').innerText = `${currentPage*PAGEN+1}-${Math.min((currentPage+1)*PAGEN, total)} of ${total}`;

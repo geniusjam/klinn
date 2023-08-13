@@ -504,6 +504,15 @@ antecedent>* { /* both inputs and buttons */
     margin: 0.2em 1em;
 }
 
+no-data {
+    display: none;
+    font-style: italic;
+}
+
+no-data:only-child {
+    display: block;
+}
+
 @media screen and (max-width: 650px) {
     vitals-tab {
         flex-direction: column;
