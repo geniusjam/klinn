@@ -16,6 +16,12 @@ const init = async () => {
         + "referredToHospital INTEGER);");
     await db.exec("CREATE TABLE IF NOT EXISTS pharmacy (id INTEGER, patient TEXT, visit INTEGER, drug TEXT, dispense INTEGER, dose TEXT, lastEditedAt INTEGER, createdAt INTEGER, "
         + "countedBy TEXT, countedAt TEXT, filledBy TEXT, filledAt TEXT);");
+    // history
+    await db.exec("CREATE TABLE IF NOT EXISTS history_medical (id INTEGER, patient TEXT, disease TEXT, date INTEGER, treatment TEXT)");
+    await db.exec("CREATE TABLE IF NOT EXISTS history_surgical (id INTEGER, patient TEXT, surgery TEXT, date INTEGER, place TEXT, complication TEXT)");
+    await db.exec("CREATE TABLE IF NOT EXISTS history_traumatic (id INTEGER, patient TEXT, part TEXT, surgery TEXT, date INTEGER, complication TEXT)");
+    await db.exec("CREATE TABLE IF NOT EXISTS history_allergic (id INTEGER, patient TEXT, name TEXT)");
+    await db.exec("CREATE TABLE IF NOT EXISTS history_hereditary (id INTEGER, patient TEXT, relative TEXT, disease TEXT)");
     
     // addColumn method for those databases which are not being created for the first time
     // but don't have the required columns.
@@ -30,7 +36,7 @@ const init = async () => {
     await addColumn('pharmacy', 'lastEditedAt', 'INTEGER');
     await addColumn('pharmacy', 'createdAt', 'INTEGER');
 
-    await addColumn('visits', 'referredToHospital', 'INTEGER'); // bolean // whether the patient was referred to the hospital
+    await addColumn('visits', 'referredToHospital', 'INTEGER'); // boolean // whether the patient was referred to the hospital
 
     // TODO: make accounts dynamic
     const accounts = await db.all("SELECT * FROM accounts");
@@ -57,10 +63,6 @@ const init = async () => {
         return { id, name, lastname, gender, createdBy, birthdate, createdAt }; // partial patient
     }
 
-    async function getPatientById(id) {
-        return await db.get("SELECT * FROM patients WHERE id = ?", id);
-    }
-
     async function createVisit(id, patient, createdBy, createdAt) {
         if (!(await db.get("SELECT name FROM patients WHERE id = ?", patient))) throw "No such patient.";
 
@@ -73,6 +75,15 @@ const init = async () => {
         await db.run("INSERT INTO pharmacy(id,patient,visit,createdAt) VALUES (?,?,?,?);", id, patient, visit, createdAt);
 
         return { id, patient, visit, createdAt };
+    }
+
+    /** @param type should never be controlled by the user */
+    async function createHistory(type, id, patient) {
+        await db.run(`INSERT INTO history_${type}(id,patient) VALUES (?,?)`, id, patient);
+    }
+
+    async function getPatientById(id) {
+        return await db.get("SELECT * FROM patients WHERE id = ?", id);
     }
 
     async function getVisitsOf(patient) {
@@ -95,8 +106,22 @@ const init = async () => {
         return await db.all("SELECT * FROM pharmacy");
     }
 
+    async function getAllHistory() {
+        return {
+            medical: await db.all("SELECT * FROM history_medical"),
+            surgical: await db.all("SELECT * FROM history_surgical"),
+            traumatic: await db.all("SELECT * FROM history_traumatic"),
+            allergic: await db.all("SELECT * FROM history_allergic"),
+            hereditary: await db.all("SELECT * FROM history_hereditary"),
+        };
+    }
+
     async function getPatientsByName(name, a, b) {
         return await db.all("SELECT * FROM patients WHERE firstname + \" \" + lastname LIKE ? ORDER BY createdAt LIMIT ? OFFSET ?", name, b-a, a);
+    }
+
+    async function updateHistory(type, id, patient, field, value) {
+        await db.run(`UPDATE history_${type} SET ${field} = ? WHERE id = ? AND patient = ?`, value, id, patient);
     }
 
     async function updateMedication(id, patient, visit, field, value) {
@@ -120,17 +145,27 @@ const init = async () => {
         await db.run("DELETE FROM patients WHERE id = ?", patient);
         await db.run("DELETE FROM visits WHERE patient = ?", patient);
         await db.run("DELETE FROM pharmacy WHERE patient = ?", patient);
+
+        await db.run("DELETE FROM history_medical WHERE patient = ?", patient);
+        await db.run("DELETE FROM history_surgical WHERE patient = ?", patient);
+        await db.run("DELETE FROM history_traumatic WHERE patient = ?", patient);
+        await db.run("DELETE FROM history_allergic WHERE patient = ?", patient);
+        await db.run("DELETE FROM history_hereditary WHERE patient = ?", patient);
     }
 
     async function deleteMedication(id, patient, visit) {
         await db.run("DELETE FROM pharmacy WHERE patient = ? AND visit = ? AND id = ?", patient, visit, id);
     }
 
+    async function deleteHistory(type, id, patient) { // delete history item
+        await db.run(`DELETE FROM history_${type} WHERE id = ? AND patient = ?`, id, patient)
+    }
+
 
     return { db, getAccountById, getAccountsSafe, createPatient, getPatientById, createVisit,
         getVisitsOf, getPatients, getPatientsByName, getAllPatients, getAllVisits, updateVisit,
         updatePatient, deletePatient, getAllPharmacy, createMedication, updateMedication, deleteMedication,
-        deleteVisit };
+        deleteVisit, createHistory, getAllHistory, updateHistory, deleteHistory };
 };
 
 module.exports = init;

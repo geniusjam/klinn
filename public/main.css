@@ -483,6 +483,27 @@ treatment row.foot, medication>.top row.foot {
     margin-top: 0.5em;
 }
 
+history-tab h1 {
+    margin-bottom: 1em;
+}
+
+antecedents {
+    margin-bottom: 2em;
+}
+
+antecedents.hereditary {
+    margin-bottom: 4em;
+}
+
+antecedent {
+    display: flex;
+    flex-direction: row;
+}
+
+antecedent>* { /* both inputs and buttons */
+    margin: 0.2em 1em;
+}
+
 @media screen and (max-width: 650px) {
     vitals-tab {
         flex-direction: column;

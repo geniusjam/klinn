@@ -54,6 +54,58 @@ class Visit {
     }
 }
 
+//- history start -
+class Antecedent {
+    constructor(data) {
+        this.id = data.id;
+        this.patient = data.patient;
+    }
+}
+
+class MedicalAntecedent extends Antecedent {
+    constructor(data) {
+        super(data);
+        this.disease = data.disease || "";
+        this.date = data.date || 0;
+        this.treatment = data.treatment || "";
+    }
+}
+
+class SurgicalAntecedent extends Antecedent {
+    constructor(data) {
+        super(data);
+        this.surgery = data.surgery || "";
+        this.date = data.date || 0;
+        this.place = data.place || "";
+        this.complication = data.complication || "";
+    }
+}
+
+class TraumaticAntecedent extends Antecedent {
+    constructor(data) {
+        super(data);
+        this.part = data.part || "";
+        this.surgery = data.surgery || "";
+        this.date = data.date || 0;
+        this.complication = data.complication || "";
+    }
+}
+
+class AllergicAntecedent extends Antecedent {
+    constructor(data) {
+        super(data);
+        this.name = data.name || "";
+    }
+}
+
+class HereditaryAntecedent extends Antecedent {
+    constructor(data) {
+        super(data);
+        this.relative = data.relative || "";
+        this.disease = data.disease || "";
+    }
+}
+//- history end -
 
 class Patient {
     constructor(data) {
@@ -70,6 +122,14 @@ class Patient {
         this.whereis = data.whereis || 0;
         this.lastEditedAt = data.lastEditedAt || data.createdAt || Date.now();
 
+        this.history = {
+            medical: [],
+            surgical: [],
+            traumatic: [],
+            allergic: [],
+            hereditary: []
+        };
+
         /** @type {Visit[]} */
         this.visits = [];
     }
@@ -78,6 +138,18 @@ class Patient {
         let id = 1;
         for (const visit of this.visits) {
             if (visit.id >= id) id = visit.id + 1;
+        }
+        return id;
+    }
+
+    // why not group them all into one
+    // when considering ids?
+    nextHistoryID() {
+        let id = 1;
+        for (const key in this.history) {
+            for (const ant of this.history[key]) {
+                if (ant.id >= id) id = ant.id + 1;
+            }
         }
         return id;
     }

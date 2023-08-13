@@ -2,6 +2,13 @@ const socket = io("/");
             
 const tabButtons = $('visit tabs').children;
 const tabs = [ $("complaint-tab"), $("vitals-tab"), $("bglab-tab"), $("exam-tab"), $("pharmacy-tab"), $("history-tab") ];
+const ANTECEDENTALS = { // antecedental structures
+    medical: MedicalAntecedent,
+    surgical: SurgicalAntecedent,
+    traumatic: TraumaticAntecedent,
+    allergic: AllergicAntecedent,
+    hereditary: HereditaryAntecedent
+};
 
 const GENDERS = [ "Male", "Female", "Other" ];
 let PAGEN = 25;
@@ -9,8 +16,14 @@ let PAGEN = 25;
 let accounts = [];
 let account = { name: null, id: null };
 
-let currentPatient = null, currentVisit = null;
-let currentPage = 0, currentPatients = [];
+/** @type {Patient} */
+let currentPatient = null;
+/** @type {Visit} */
+let currentVisit = null;
+
+let currentPage = 0;
+/** @type {Patient[]} */
+let currentPatients = [];
 
 socket.once("info accounts", accs => {
     accounts = accs;
@@ -94,6 +107,13 @@ socket.once("welcome", data => {
             .visits.find(visit => visit.id === medication.visit)
             .pharmacy.push(new Medication(medication))
     );
+    for (const key in data.history) {
+        const Ant = ANTECEDENTALS[key];
+        data.history[key].forEach(his =>
+            patients.find(p => p.id === his.patient)
+                .history[key].push(new Ant(his))
+        );
+    }
 
     // add patients
     currentPage = 0;
@@ -303,6 +323,12 @@ $("patients-list").onclick = function(event) { // display patient
     $("visits-list").innerHTML = "";
     patient.visits.forEach(visit => addVisitItemStructure(visit));
 
+    for (const type in patient.history) {
+        $("antecedents."+type).innerHTML = "";
+        for (const ant of patient.history[type])
+            $("antecedents."+type).appendChild(buildAntecedent(type, ant));
+    }
+
     $("patient-page").style.display = "flex";
     $("patients").style.display = "none";
 
@@ -324,6 +350,113 @@ $all("patient-details select").forEach(el => el.onchange = function() {
     currentPatient[field] = +this.value;
     const { id, name, lastname, gender, birthdate, whereis, isWaiting } = currentPatient;
     socket.emit("upd patient", { id, name, lastname, gender, birthdate, whereis, isWaiting });
+});
+
+$all('history-tab h2 button').forEach(addButton => { // Add history item
+    const type = addButton.classList.item(0);
+    const Ant = ANTECEDENTALS[type];
+    addButton.onclick = function() {
+        const id = currentPatient.nextHistoryID();
+        const ant = new Ant({ id, patient: currentPatient.id });
+
+        currentPatient.history[type].push(ant);
+
+        $("antecedents."+type).appendChild(buildAntecedent(type, ant));
+    
+        socket.emit("new history", { type, id, patient: currentPatient.id });
+    }
+});
+
+function buildAntecedent(type, ant) {
+    const html = document.createElement("antecedent");
+    html.setAttribute("ant-id", ant.id);
+
+    for (const key in ant) {
+        if (key === "patient" || key === "id") continue;
+
+        const input = document.createElement("input");
+        input.setAttribute("ant-key", key);
+
+        // all numbers are dates.
+        if (typeof ant[key] === "string") {
+            input.value = ant[key];
+            input.placeholder = key[0].toUpperCase() + key.slice(1);
+            input.type = "text";
+            input.setAttribute("autocomplete", "off");
+        } else {
+            // all numbers are dates
+            input.type = "date";
+            const date = new Date(ant[key]);
+            if (ant[key] !== 0) input.value = fourDigits(date.getFullYear()) + "-" + twoDigits(1+date.getMonth()) + "-" + twoDigits(date.getDate());
+        }
+
+        input.onchange = () => {
+            let val = input.value;
+            if (input.type === "date") {
+                val = new Date(input.value.replace(/-/g, "/")).getTime();
+            }
+
+            console.log("onchange", ant[key], val);
+            if (ant[key] === val) return; // no change
+            console.log("changing...")
+
+            ant[key] = val;
+            socket.emit("upd history", { type, id: ant.id, patient: ant.patient, field: key, value: val });
+        };
+
+        html.appendChild(input);
+    }
+
+    const button = document.createElement("button");
+    button.classList.add("red");
+    button.innerText = "-";
+    button.onclick = function() { // delete antecedent
+        const inx = currentPatient.history[type].findIndex(i => i.id === ant.id);
+        currentPatient.history[type].splice(inx, 1);
+        html.parentNode.removeChild(html);
+
+        socket.emit("delete history", { type, id: ant.id, patient: ant.patient });
+    }
+    html.appendChild(button)
+
+    return html;
+}
+
+socket.on("new history", ({ type, id, patient }) => {
+    console.log("new history", { type, id, patient });
+    const pat = patients.find(p => p.id === patient);
+    const Ant = ANTECEDENTALS[type];
+    const ant = new Ant({ id, patient });
+
+    pat.history[type].push(ant);
+
+    $("antecedents."+type).appendChild(buildAntecedent(type, ant));
+});
+
+socket.on("upd history", ({ type, id, patient, field, value }) => {
+    const pat = patients.find(p => p.id === patient);
+    const item = pat.history[type].find(h => h.id === id);
+    item[field] = value;
+
+    if (currentPatient && currentPatient.id === patient) {
+        const input = $(`antecedents.${type} antecedent[ant-id="${id}"] input[ant-key="${field}"]`);
+        if (input.type === "date") {
+            const date = new Date(value);
+            input.value = fourDigits(date.getUTCFullYear()) + '-' + twoDigits(1+date.getMonth()) + '-' + twoDigits(date.getDate());
+        } else input.value = value;
+    }
+});
+
+socket.on("delete history", ({ type, id, patient }) => {
+    const pat = patients.find(p => p.id === patient);
+    const inx = pat.history[type].findIndex(h => h.id === id);
+
+    if (currentPatient && currentPatient.id === patient) {
+        const el = $(`antecedents.${type} antecedent[ant-id="${id}"]`);
+        el.parentNode.removeChild(el);
+    }
+
+    pat.history[type].splice(inx, 1);
 });
 
 $("visits button").onclick = () => { // New Visit
