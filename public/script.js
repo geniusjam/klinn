@@ -372,7 +372,12 @@ $('visits-list').onclick = function(event) { // display visit
     for (const child of this.children) child.classList.remove('selected');
     el.classList.add('selected');
 
-    tabButtons[0].click();
+    // see if there exists a button which is selected (not gray)
+    let tab = false;
+    for (button of tabButtons) {
+        if (!button.classList.contains("gray")) tab = true;
+    }
+    if (!tab) tabButtons[1].click();
 
     if (window.innerWidth < 650)  $('patient-page visits').style.display = 'none';
 };
@@ -756,70 +761,20 @@ function updateStats() {
     $("patients header small .today").innerText = patients.map(p => p.visits.filter(v => +v.date > date.getTime()).length).reduce((p, c) => p + c, 0);
 }
 
-$("tabs .complaint").onclick = function() {
-    if (!currentVisit) return;
-    tabs.forEach(tab => tab.style.display = 'none');
-    tabs[0].style.display = 'flex';
+tabs.forEach((el, inx) => {
+    const name = el.tagName.split("-")[0].toLowerCase();
+    $("tabs ."+name).onclick = function() {
+        if (inx < 5 && !currentVisit) return; // do nothing
+        tabs.forEach(tab => tab.style.display = 'none');
+        tabs[inx].style.display = 'flex';
 
-    for (const btn of tabButtons) {
-        btn.classList.add("gray");
+        for (const btn of tabButtons) {
+            btn.classList.add("gray");
+        }
+        this.classList.remove('gray');
     }
-    this.classList.remove('gray');
-};
+});
 
-$("tabs .vitals").onclick = function() {
-    if (!currentVisit) return;
-    tabs.forEach(tab => tab.style.display = 'none');
-    tabs[1].style.display = 'flex';
-
-    for (const btn of tabButtons) {
-        btn.classList.add("gray");
-    }
-    this.classList.remove('gray');
-};
-
-$("tabs .bglab").onclick = function() {
-    if (!currentVisit) return;
-    tabs.forEach(tab => tab.style.display = 'none');
-    tabs[2].style.display = 'flex';
-
-    for (const btn of tabButtons) {
-        btn.classList.add("gray");
-    }
-    this.classList.remove('gray');
-};
-
-$("tabs .exam").onclick = function() {
-    if (!currentVisit) return;
-    tabs.forEach(tab => tab.style.display = 'none');
-    tabs[3].style.display = 'flex';
-
-    for (const btn of tabButtons) {
-        btn.classList.add("gray");
-    }
-    this.classList.remove('gray');
-};
-
-$("tabs .pharmacy").onclick = function() {
-    if (!currentVisit) return;
-    tabs.forEach(tab => tab.style.display = 'none');
-    tabs[4].style.display = 'flex';
-
-    for (const btn of tabButtons) {
-        btn.classList.add("gray");
-    }
-    this.classList.remove('gray');
-};
-
-$("tabs .history").onclick = function() {
-    tabs.forEach(tab => tab.style.display = 'none');
-    tabs[5].style.display = 'flex';
-
-    for (const btn of tabButtons) {
-        btn.classList.add("gray");
-    }
-    this.classList.remove('gray');
-};
 
 function download(filename, text) {
     var element = document.createElement('a');

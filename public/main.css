@@ -134,6 +134,11 @@ h2 {
     font-weight: 400;
 }
 
+h1 {
+    font-size: 250%;
+    font-weight: 500;
+}
+
 patient-page {
     flex-direction: column;
     height: 100%;
@@ -198,11 +203,11 @@ complaint-tab, vitals-tab, bglab-tab, exam-tab, pharmacy-tab, history-tab {
     overflow: auto;
     display: none;
     height: 100%;
-    width: 100%;
 }
 
 history-tab {
     flex-direction: column;
+    padding-left: 1em;
 }
 
 patient-page row visits {
