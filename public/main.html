@@ -261,8 +261,21 @@
                                 <div>
                                     <h2> Diagnosis </h2>
                                     <row>
-                                        <input placeholder="Diagnosis" class="ediagnosis" autocomplete="off" />
+                                        <input placeholder="Diagnosis" list="diagnosisList" class="ediagnosis" autocomplete="off" />
                                         <input placeholder="Diagnosis Notes" class="ediagnosisnotes" autocomplete="off" />
+                                        <datalist id="diagnosisList">
+                                            <option value="Cardiological"></option>
+                                            <option value="Dental"></option>
+                                            <option value="Dermatological"></option>
+                                            <option value="Gastrointestinal"></option>
+                                            <option value="Neurological"></option>
+                                            <option value="Ophthalmological"></option>
+                                            <option value="Respiratory"></option>
+                                            <option value="Traumatic"></option>
+                                            <option value="Urinary"></option>
+                                            <option value="Psychological"></option>
+                                            <option value="Other"></option>
+                                        </datalist>
                                     </row>
                                 </div>
                                 <div class="mid">
@@ -306,7 +319,7 @@
             </visit-item>
             <treatment>
                 <row>
-                    <column> Drug: <input type="text" autocomplete="off" class="mdrug" /> </column>
+                    <column> Drug: <input type="text" autocomplete="off" class="mdrug" list="medicationList" /> </column>
                     <column> Dispense: <input autocomplete="off" type="number" class="mdispense" /> </column>
                     <column class="shrink"> <button class="red"> - </button> </column>
                 </row>
@@ -344,6 +357,7 @@
                 </div>
             </medication>
         </structures>
+        <datalist id="medicationList"></datalist>
         <script>
             window.$ = (...q) => document.querySelector(...q);
             window.$all = (...q) => document.querySelectorAll(...q);

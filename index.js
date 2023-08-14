@@ -1,8 +1,11 @@
 const express = require('express');
 const path = require("path");
+const fs = require("fs");
 const app = express();
 const Database = require("./db");
 let db;
+
+const medications = fs.readFileSync("medications.txt", "utf8").split("\n").filter(q => q);
 
 app.use(express.static("public/"));
 
@@ -34,7 +37,7 @@ io.on("connection", async socket => {
         const acc = await db.getAccountById(data.id);
         if (!acc) return;
         if (acc.password !== data.password) return socket.emit("wrong password");
-        socket.emit("welcome", { visits: await db.getAllVisits(), patients: await db.getAllPatients(), pharmacy: await db.getAllPharmacy(), history: await db.getAllHistory() }); // TODO: mode for 0-50?
+        socket.emit("welcome", { medications, visits: await db.getAllVisits(), patients: await db.getAllPatients(), pharmacy: await db.getAllPharmacy(), history: await db.getAllHistory() }); // TODO: mode for 0-50?
         account = acc;
         sockets.push(socket);
         sockets.forEach(s => s.emit("online update", sockets.length-1));

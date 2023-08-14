@@ -114,6 +114,11 @@ socket.once("welcome", data => {
                 .history[key].push(new Ant(his))
         );
     }
+    for (const med of data.medications) {
+        const option = document.createElement("option");
+        option.value = med;
+        $("#medicationList").appendChild(option);
+    }
 
     // add patients
     currentPage = 0;
