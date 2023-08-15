@@ -9,7 +9,18 @@ const init = async () => {
 
     await db.exec("CREATE TABLE IF NOT EXISTS accounts (name TEXT, id TEXT, password TEXT);");
     await db.exec("CREATE TABLE IF NOT EXISTS patients (id TEXT PRIMARY KEY, name TEXT, lastname TEXT, gender INTEGER, createdBy TEXT, photo TEXT, lastEditedAt INTEGER, "
-        + "birthdate INTEGER, createdAt INTEGER, waitedFor INTEGER, isWaiting INTEGER, whereis INTEGER);");
+        + "birthdate INTEGER, createdAt INTEGER, waitedFor INTEGER, isWaiting INTEGER, whereis INTEGER, "
+        // ------- history -------
+        // gynecological:
+        + "gynecoFirstPeriod INTEGER, gynecoLastPeriod INTEGER, gynecoDuration INTEGER, gynecoRegularity INTEGER, "
+        + "gynecoAbortions INTEGER, gynecoCSections INTEGER, gynecoDeliveries INTEGER, gynecoLivingChildren INTEGER, "
+        // prenatal:
+        + "prenatalAppointments INTEGER, prenatalInfection TEXT, prenatalVaccines TEXT, "
+        // natal:
+        + "natalBirth INTEGER, natalDischarged INTEGER, "
+        // postnatal:
+        + "postnatalSupportsHead INTEGER, postnatalSits INTEGER, postnatalWalks INTEGER, postnatalSpeaks INTEGER, postnatalOthers TEXT, postnatalVaccines TEXT"
+        + ");");
     await db.exec("CREATE TABLE IF NOT EXISTS visits (id INTEGER, patient TEXT, date INTEGER, createdBy TEXT, lastEditedAt INTEGER, "
         + "complaint TEXT, complaintNotes TEXT, vitalsTemp REAL, vitalsWeight INTEGER, vitalsHeight INTEGER, vitalsHeartRate INTEGER, vitalsBPA INTEGER, vitalsBPB INTEGER, vitalsO2 INTEGER, vitalsRespRate INTEGER, "
         + "bgResults TEXT, bgDate TEXT, bgNotes TEXT, examDoctor TEXT, examNotes TEXT, diagnosis TEXT, diagnosisNotes TEXT, "
@@ -25,9 +36,12 @@ const init = async () => {
     
     // addColumn method for those databases which are not being created for the first time
     // but don't have the required columns.
+    const columns = {};
     async function addColumn(table, name, type) {
-        const cols = await db.all(`PRAGMA table_info(${table})`);
-        if (cols.find(c => c.name === name)) return;
+        if (!columns[table]) {
+            columns[table] = await db.all(`PRAGMA table_info(${table})`);
+        }
+        if (columns[table].find(c => c.name === name)) return;
         await db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${type};`);
     }
 
@@ -35,6 +49,29 @@ const init = async () => {
     await addColumn('visits', 'lastEditedAt', 'INTEGER');
     await addColumn('pharmacy', 'lastEditedAt', 'INTEGER');
     await addColumn('pharmacy', 'createdAt', 'INTEGER');
+
+    await addColumn('patients', 'gynecoFirstPeriod', 'INTEGER');
+    await addColumn('patients', 'gynecoLastPeriod', 'INTEGER');
+    await addColumn('patients', 'gynecoDuration', 'INTEGER');
+    await addColumn('patients', 'gynecoRegularity', 'INTEGER');
+    await addColumn('patients', 'gynecoAbortions', 'INTEGER');
+    await addColumn('patients', 'gynecoCSections', 'INTEGER');
+    await addColumn('patients', 'gynecoDeliveries', 'INTEGER');
+    await addColumn('patients', 'gynecoLivingChildren', 'INTEGER');
+
+    await addColumn('patients', 'prenatalAppointments', 'INTEGER');
+    await addColumn('patients', 'prenatalInfection', 'TEXT');
+    await addColumn('patients', 'prenatalVaccines', 'TEXT');
+
+    await addColumn('patients', 'natalBirth', 'INTEGER');
+    await addColumn('patients', 'natalDischarged', 'INTEGER');
+
+    await addColumn('patients', 'postnatalSupportsHead', 'INTEGER');
+    await addColumn('patients', 'postnatalSits', 'INTEGER');
+    await addColumn('patients', 'postnatalWalks', 'INTEGER');
+    await addColumn('patients', 'postnatalSpeaks', 'INTEGER');
+    await addColumn('patients', 'postnatalOthers', 'TEXT');
+    await addColumn('patients', 'postnatalVaccines', 'TEXT');
 
     await addColumn('visits', 'referredToHospital', 'INTEGER'); // boolean // whether the patient was referred to the hospital
 
@@ -132,6 +169,10 @@ const init = async () => {
         await db.run(`UPDATE visits SET ${field} = ? WHERE id = ? AND patient = ?`, value, visit, patient);
     }
 
+    async function updatePatientPartial(id, field, value) {
+        await db.run(`UPDATE patients SET ${field} = ? WHERE id = ?`, value, id);
+    }
+
     async function updatePatient(id, name, lastname, gender, birthdate, isWaiting, whereis) {
         await db.run(`UPDATE patients SET name = ?, lastname = ?, gender = ?, birthdate = ?, isWaiting = ?, whereis = ? WHERE id = ?`, name, lastname, gender, birthdate, isWaiting, whereis, id);
     }
@@ -165,7 +206,7 @@ const init = async () => {
     return { db, getAccountById, getAccountsSafe, createPatient, getPatientById, createVisit,
         getVisitsOf, getPatients, getPatientsByName, getAllPatients, getAllVisits, updateVisit,
         updatePatient, deletePatient, getAllPharmacy, createMedication, updateMedication, deleteMedication,
-        deleteVisit, createHistory, getAllHistory, updateHistory, deleteHistory };
+        deleteVisit, createHistory, getAllHistory, updateHistory, deleteHistory, updatePatientPartial };
 };
 
 module.exports = init;

@@ -180,6 +180,16 @@ io.on("connection", async socket => {
         sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("upd patient", data)); // TODO: some kind of data sanitization for "data"?
     });
 
+    socket.on("upd patient partial", async data => {
+        if (!account || !data || !data.id || typeof data.field !== "string" || typeof data.value === "undefined") return;
+        // TODO: type checking for data.id
+
+        await db.updatePatientPartial(data.id, data.field, data.value);
+
+        // send update to subscribers
+        sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("upd patient partial", data)); // TODO: some kind of data sanitization for "data"?
+    });
+
     socket.on("delete patient", async patient => {
         if (!account || typeof patient !== "string") return;
         await db.deletePatient(patient);

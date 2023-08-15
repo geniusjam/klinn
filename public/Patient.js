@@ -130,6 +130,29 @@ class Patient {
             hereditary: []
         };
 
+        this.gynecoFirstPeriod = data.gynecoFirstPeriod || 0;
+        this.gynecoLastPeriod = data.gynecoLastPeriod || 0;
+        this.gynecoDuration = data.gynecoDuration || 0;
+        this.gynecoRegularity = data.gynecoRegularity || 0;
+        this.gynecoAbortions = data.gynecoAbortions || 0;
+        this.gynecoCSections = data.gynecoCSections || 0;
+        this.gynecoDeliveries = data.gynecoDeliveries || 0;
+        this.gynecoLivingChildren = data.gynecoLivingChildren || 0;
+
+        this.prenatalAppointments = data.prenatalAppointments || 0;
+        this.prenatalInfection = data.prenatalInfection || "";
+        this.prenatalVaccines = data.prenatalVaccines || "";
+
+        this.natalBirth = data.natalBirth || 0;
+        this.natalDischarged = data.natalDischarged || 0;
+
+        this.postnatalSupportsHead = data.postnatalSupportsHead || 0;
+        this.postnatalSits = data.postnatalSits || 0;
+        this.postnatalWalks = data.postnatalWalks || 0;
+        this.postnatalSpeaks = data.postnatalSpeaks || 0;
+        this.postnatalOthers = data.postnatalOthers || "";
+        this.postnatalVaccines = data.postnatalVaccines || "";
+
         /** @type {Visit[]} */
         this.visits = [];
     }

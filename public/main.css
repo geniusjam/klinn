@@ -304,7 +304,7 @@ table, tr, td {
 }
 
 
-vitals-tab td.left {
+fields td.left {
     text-align: right;
 }
 
@@ -485,6 +485,23 @@ treatment row.foot, medication>.top row.foot {
 
 history-tab h1 {
     margin-bottom: 1em;
+}
+
+natality, gynecological {
+    flex-direction: column;
+}
+
+gynecological input[type="number"], natality input[type="number"] {
+    max-width: 9vh;
+}
+
+history-tab table {
+    width: fit-content;
+}
+
+history-tab td {
+    padding: 0.1em 0.3em;
+    vertical-align: top;
 }
 
 antecedents {

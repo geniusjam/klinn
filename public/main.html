@@ -136,6 +136,110 @@
                         </tabs>
                         <fields>
                             <history-tab>
+                                <gynecological>
+                                    <h1> Gynecological </h1>
+                                    <table>
+                                        <tr>
+                                            <td class="left"> Date of first period </td>
+                                            <td> <input type="date" class="gynecoFirstPeriod"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Date of last period </td>
+                                            <td> <input type="date" class="gynecoLastPeriod"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Period Duration </td>
+                                            <td> <input type="number" class="gynecoDuration"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Period Regularity </td>
+                                            <td> <input type="number" class="gynecoRegularity"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Pregnancies </td>
+                                            <td> <span class="pregnancies">0</span> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Abortions </td>
+                                            <td> <input type="number" class="gynecoAbortions"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Ceserean Sections </td>
+                                            <td> <input type="number" class="gynecoCSections"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Deliveries </td>
+                                            <td> <input type="number" class="gynecoDeliveries"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Living Children </td>
+                                            <td> <input type="number" class="gynecoLivingChildren"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Dead Children </td>
+                                            <td> <span class="deadChildren">0</span> </td>
+                                        </tr>
+                                    </table>
+                                </gynecological>
+                                <natality>
+                                    <h1> Prenatal </h1>
+                                    <table>
+                                        <tr>
+                                            <td class="left"> Prenatal Control Appointments </td>
+                                            <td> <input type="number" class="prenatalAppointments"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Infection During Pregnancy </td>
+                                            <td> <textarea class="prenatalInfection"></textarea> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Vaccines </td>
+                                            <td> <textarea class="prenatalVaccines"></textarea> </td>
+                                        </tr>
+                                    </table>
+                                    <h1> Natal </h1>
+                                    <table>
+                                        <tr>
+                                            <td> <select class="natalBirth">
+                                                <option value="0"> Normal Delivery </option>
+                                                <option value="1"> Cesarean Section </option>
+                                            </select> </td>
+                                        </tr>
+                                        <tr>
+                                            <td> <select class="natalDischarged">
+                                                <option value="0"> Discharged with mother </option>
+                                                <option value="1"> Hospitalization </option>
+                                            </select> </td>
+                                        </tr>
+                                    </table>
+                                    <h1> Postnatal </h1>
+                                    <table>
+                                        <tr>
+                                            <td class="left"> Supports head on its own </td>
+                                            <td> <input type="number" class="postnatalSupportsHead"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Sits </td>
+                                            <td> <input type="number" class="postnatalSits"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Walks </td>
+                                            <td> <input type="number" class="postnatalWalks"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Speaks </td>
+                                            <td> <input type="number" class="postnatalSpeaks"> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Others </td>
+                                            <td> <textarea class="postnatalOthers"></textarea> </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"> Vaccines </td>
+                                            <td> <textarea class="postnatalVaccines"></textarea> </td>
+                                        </tr>
+                                    </table>
+                                </natality>
                                 <h1> Antecedents </h1>
                                 <h2> Medical <button class="medical"> Add </button> </h2>
                                 <antecedents class="medical"></antecedents>

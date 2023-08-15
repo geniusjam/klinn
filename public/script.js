@@ -334,6 +334,24 @@ $("patients-list").onclick = function(event) { // display patient
             $("antecedents."+type).appendChild(buildAntecedent(type, ant));
     }
 
+    for (const key in historyInputs) {
+        const input = $("history-tab ." + key);
+
+        fillInput(key, input, patient[key]);
+    }
+
+    // update pregnancies and dead children
+    $('.pregnancies').innerText = patient.gynecoAbortions + patient.gynecoDeliveries + patient.gynecoCSections;
+    $('.deadChildren').innerText = patient.gynecoDeliveries + patient.gynecoCSections - patient.gynecoLivingChildren;
+
+    if (patient.gender === 1) $("gynecological").style.display = "flex"; // if it's a female
+    else $("gynecological").style.display = "none";
+
+    const lifespan = (Date.now() - getDate(patient.birthdate).getTime());
+    const age = Math.floor(lifespan / 1000 / 60 / 60 / 24 / 365);
+    if (age <= 5) $("natality").style.display = "flex"; // if younger than 5
+    else $("natality").style.display = "none";
+
     $("patient-page").style.display = "flex";
     $("patients").style.display = "none";
 
@@ -344,6 +362,15 @@ $("patients-list").onclick = function(event) { // display patient
 
     $('patient-page visits').style.display = 'flex';
 };
+
+// update pregnancies and dead children
+$('.gynecoAbortions').oninput = $('.gynecoDeliveries').oninput = $('.gynecoCSections').oninput =
+    $('.gynecoLivingChildren').oninput = () => updatePregnanciesAndDeadChildren();
+
+function updatePregnanciesAndDeadChildren() {
+    $('.pregnancies').innerText = +$('.gynecoAbortions').value + +$('.gynecoDeliveries').value + +$('.gynecoCSections').value;
+    $('.deadChildren').innerText = +$('.gynecoDeliveries').value + +$('.gynecoCSections').value - $('.gynecoLivingChildren').value;
+}
 
 $("patient-page header button").onclick = () => { // Back
     $("patient-page").style.display = "none";
@@ -477,6 +504,22 @@ socket.on("delete history", ({ type, id, patient }) => {
     pat.history[type].splice(inx, 1);
 });
 
+const historyInputs = {};
+[
+    // gynecological
+    "gynecoFirstPeriod", "gynecoLastPeriod", "gynecoDuration", "gynecoRegularity", "gynecoAbortions",
+    "gynecoCSections", "gynecoDeliveries", "gynecoLivingChildren",
+
+    // prenatal
+    "prenatalAppointments", "prenatalInfection", "prenatalVaccines",
+
+    // natal
+    "natalBirth", "natalDischarged",
+
+    // postnatal
+    "postnatalSupportsHead", "postnatalSits", "postnatalWalks", "postnatalSpeaks", "postnatalOthers", "postnatalVaccines"
+].forEach(e => tieTo($("history-tab ." + e), e, "patient partial"));
+
 $("visits button").onclick = () => { // New Visit
     const createdAt = Date.now();
     const id = currentPatient.nextVisitID();
@@ -533,9 +576,14 @@ $('visits-list').onclick = function(event) { // display visit
     if (window.innerWidth < 650)  $('patient-page visits').style.display = 'none';
 };
 
-function fillInput(field) {
-    const input = inputsByField[field];
-    const value = currentVisit[field];
+function fillInput(field, input, value) {
+    if (input === undefined) input = inputsByField[field];
+    if (value === undefined) value = currentVisit[field];
+
+    if (input.tagName.toLowerCase() === "select") {
+        input.value = +value;
+        return;
+    }
 
     if (input.type === "date") {
         // handle date
@@ -580,7 +628,7 @@ function fillInput(field) {
     [$('exam-tab .ediagnosis'), "diagnosis"],
     [$('exam-tab .ediagnosisNotes'), "diagnosisNotes"],
     [$('exam-tab input[type="checkbox"]'), "referredToHospital"],
-].forEach(([a,b]) => tieTo(a, b));
+].forEach(([a,b]) => tieTo(a, b, "visit"));
 
 socket.on("upd visit", ({ field, value, visit: visitId, patient: patientId }) => {
     const patient = patients.find(p => p.id === patientId);
@@ -622,21 +670,32 @@ $('patients header .filter').onkeyup = function() {
     displayPatients();
 };
 
-function tieTo(input, field) {
-    inputsByField[field] = input;
+function tieTo(input, field, type) {
+    if (type === "patient partial") historyInputs[field] = input;
+    else inputsByField[field] = input;
     input.onchange = function() {
         let val = input.value;
-        if (typeof currentVisit[field] === "number" && val === '') {
+        if (input.type === "number" && val === '') {
             val = 0;
         }
+        if (input.type === "number") val = +val;
         if (input.type === "checkbox") val = input.checked ? 1 : 0;
         if (input.type === "date" && val) {
             val = (new Date(val)).getTime();
         }
-        if (val === currentVisit[field]) return; // no change
+        if (input.tagName.toLowerCase() === "select") {
+            val = +val;
+        }
+        if (type === "visit" ? (val === currentVisit[field]) : (val === currentPatient[field])) return; // no change
 
-        currentVisit[field] = val;
-        socket.emit("upd visit", { field, value: val, patient: currentPatient.id, visit: currentVisit.id });
+        if (type === "visit") currentVisit[field] = val;
+        else currentPatient[field] = val;
+        const payload = { field, value: val };
+        if (type === "visit") {
+            payload.patient = currentPatient.id;
+            payload.visit = currentVisit.id;
+        } else payload.id = currentPatient.id;
+        socket.emit("upd " + type, payload);
     };
 }
 
@@ -835,6 +894,20 @@ $('patient-page overlay box button').onclick = function() { // Save patient
 
     $('patient-page overlay').style.display = 'none';
 };
+
+socket.on("upd patient partial", ({ id, field, value }) => {
+    // it's from the history tab...
+    const patient = patients.find(p => p.id === id);
+    patient[field] = value;
+
+    if (currentPatient && currentPatient.id === id) {
+        const el = $("history-tab ."+field);
+        if (el) {// just in case
+            fillInput(field, el, value);
+            updatePregnanciesAndDeadChildren();
+        }
+    }
+});
 
 socket.on("upd patient", ({ id, name, lastname, gender, birthdate, whereis, isWaiting }) => {
     const patient = patients.find(p => p.id === id);
