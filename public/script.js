@@ -344,11 +344,11 @@ $("patients-list").onclick = function(event) { // display patient
     $('.pregnancies').innerText = patient.gynecoAbortions + patient.gynecoDeliveries + patient.gynecoCSections;
     $('.deadChildren').innerText = patient.gynecoDeliveries + patient.gynecoCSections - patient.gynecoLivingChildren;
 
-    if (patient.gender === 1) $("gynecological").style.display = "flex"; // if it's a female
-    else $("gynecological").style.display = "none";
-
     const lifespan = (Date.now() - getDate(patient.birthdate).getTime());
     const age = Math.floor(lifespan / 1000 / 60 / 60 / 24 / 365);
+    if (patient.gender === 1 && age > 7) $("gynecological").style.display = "flex"; // if it's a female older than 7
+    else $("gynecological").style.display = "none";
+
     if (age <= 5) $("natality").style.display = "flex"; // if younger than 5
     else $("natality").style.display = "none";
 
@@ -935,6 +935,14 @@ socket.on("upd patient", ({ id, name, lastname, gender, birthdate, whereis, isWa
 
         $("patient-details select").value = currentPatient.isWaiting;
         $("patient-details .whereis").value = currentPatient.whereis;
+        
+        const lifespan = (Date.now() - getDate(patient.birthdate).getTime());
+        const age = Math.floor(lifespan / 1000 / 60 / 60 / 24 / 365);
+        if (patient.gender === 1 && age > 7) $("gynecological").style.display = "flex"; // if it's a female older than 7
+        else $("gynecological").style.display = "none";
+
+        if (age <= 5) $("natality").style.display = "flex"; // if younger than 5
+        else $("natality").style.display = "none";
     }
 });
 
