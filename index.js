@@ -37,7 +37,7 @@ io.on("connection", async socket => {
         const acc = await db.getAccountById(data.id);
         if (!acc) return;
         if (acc.password !== data.password) return socket.emit("wrong password");
-        socket.emit("welcome", { medications, visits: await db.getAllVisits(), patients: await db.getAllPatients(), pharmacy: await db.getAllPharmacy(), history: await db.getAllHistory() }); // TODO: mode for 0-50?
+        socket.emit("welcome", { diagnoses: await db.getAllDiagnoses(), medications, visits: await db.getAllVisits(), patients: await db.getAllPatients(), pharmacy: await db.getAllPharmacy(), history: await db.getAllHistory() }); // TODO: mode for 0-50?
         account = acc;
         sockets.push(socket);
         sockets.forEach(s => s.emit("online update", sockets.length-1));
@@ -120,6 +120,14 @@ io.on("connection", async socket => {
         sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("new medication", med)); // partial
     });
 
+    socket.on("new diagnosis", async data => {
+        if (!account || !data || typeof data.id !== "number" || !data.visit || !data.patient) return; // TODO: type checks
+
+        await db.createDiagnosis(data.id, data.patient, data.visit);
+
+        sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("new diagnosis", data)); // TODO: data sanitization
+    });
+
     socket.on("new history", async data => {
         if (!account || !data || !data.type || !data.id || !data.patient) return;
         if (!["medical", "surgical", "traumatic", "allergic", "hereditary"].includes(data.type)) return;
@@ -139,6 +147,16 @@ io.on("connection", async socket => {
         await db.updateHistory(type, id, patient, field, value);
 
         sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("upd history", { type, id, patient, field, value }));
+    });
+
+    socket.on("upd diagnosis", async data => {
+        if (!account || !data || typeof data.patient !== "string" || typeof data.visit !== "number" || typeof data.id !== "number"
+            || typeof data.field !== "string" || typeof data.value === "undefined") return;
+        // TODO: checks for data.field and type checking for data.value
+
+        await db.updateDiagnosis(data.id, data.patient, data.visit, data.field, data.visit);
+
+        sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("upd diagnosis", data)); // TODO: data sanitization
     });
 
     socket.on("upd medication", async data => {
@@ -209,6 +227,13 @@ io.on("connection", async socket => {
         await db.deleteMedication(data.id, data.patient, data.visit);
 
         sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("delete medication", { id: data.id, visit: data.visit, patient: data.patient }));
+    });
+
+    socket.on("delete diagnosis", async data => {
+        if (!account || !data || typeof data.patient !== "string" || typeof data.visit !== "number" || typeof data.id !== "number") return;
+        await db.deleteDiagnosis(data.id, data.patient, data.visit);
+
+        sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("delete diagnosis", { id: data.id, visit: data.visit, patient: data.patient }));
     });
 
     socket.on("delete history", async data => {

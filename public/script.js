@@ -107,6 +107,11 @@ socket.once("welcome", data => {
             .visits.find(visit => visit.id === medication.visit)
             .pharmacy.push(new Medication(medication))
     );
+    data.diagnoses.forEach(diag =>
+        patients.find(p => p.id === diag.patient)
+            .visits.find(visit => visit.id === diag.visit)
+            .diagnoses.push(new Diagnosis(diag))
+    );
     for (const key in data.history) {
         const Ant = ANTECEDENTALS[key];
         data.history[key].forEach(his =>
@@ -176,7 +181,7 @@ $("patients header button.new").onclick = () => {
     });
 };
 
-$('patients overlay.report box button').onclick = () => {
+$('patients overlay.report box button').onclick = () => { // Create report
     const from = $('patients overlay.report input');
     const until = $('patients overlay.report input.until');
     if (from.value === until.value) return alert("The dates are the same!");
@@ -187,6 +192,7 @@ $('patients overlay.report box button').onclick = () => {
     const untilDate = new Date(until.value.replace(/-/g, "/"));
     untilDate.setUTCHours(0, 0, 0, 0);
 
+    /** @type {Visit[]} */
     const visits = [];
     patients.forEach(patient =>
         patient.visits.forEach(visit => {
@@ -226,6 +232,12 @@ $('patients overlay.report box button').onclick = () => {
         const ds = list.length > comma.length ? list : comma;
         ds.forEach(d => {
             d = d.trim();
+            if (diagnoses[d]) diagnoses[d]++;
+            else diagnoses[d] = 1;
+        });
+
+        visit.diagnoses.forEach(diag => {
+            let d = diag.diagnosis.trim();
             if (diagnoses[d]) diagnoses[d]++;
             else diagnoses[d] = 1;
         });
@@ -558,6 +570,9 @@ $('visits-list').onclick = function(event) { // display visit
     $('patient-details medications-list').innerHTML = '<no-data> None. </no-data>';
     visit.pharmacy.forEach(med => addMedicationStructure(med));
 
+    $('exam-tab diagnoses').innerHTML = '';
+    visit.diagnoses.forEach(diag => addDiagnosisStructure(diag));
+
     if (visit.vitalsHeight !== 0 && visit.vitalsWeight !== 0) { // calculate bmi
         $('vitals-tab table span').innerText = Math.floor(visit.vitalsWeight / (visit.vitalsHeight * visit.vitalsHeight / 100 / 100) * 100) / 100;
     } else $('vitals-tab table span').innerText = '-';
@@ -775,7 +790,80 @@ function clearVisit(id) {
     }
 }
 
-$('exam-tab h2 button').onclick = function() { // Add Treatment
+$("exam-tab .add").onclick = function() { // Add diagnosis
+    const id = currentVisit.nextDiagnosisID();
+    const diag = new Diagnosis({ id, visit: currentVisit.id, patient: currentPatient.id });
+    currentVisit.diagnoses.push(diag);
+    addDiagnosisStructure(diag);
+
+    socket.emit("new diagnosis", { id, visit: currentVisit.id, patient: currentPatient.id });
+}
+
+function addDiagnosisStructure(diag) {
+    const row = document.createElement("row");
+    row.innerHTML = $('exam-tab div row').innerHTML;
+    row.setAttribute("diagnosis-id", diag.id);
+
+    row.querySelector(".ediagnosis").value = diag.diagnosis;
+    row.querySelector(".ediagnosisNotes").value = diag.notes;
+
+    row.querySelectorAll("input").forEach(el => {
+        el.onchange = () => {
+            const field = el.classList.contains("ediagnosis") ? "diagnosis" : "notes";
+            if (el.value === diag[field]) return; // no change
+            diag[field] = el.value;
+            socket.emit("upd diagnosis", { id: diag.id, visit: diag.visit, patient: diag.patient, field, value: el.value });
+        };
+    });
+
+    $('exam-tab diagnoses').appendChild(row);
+}
+
+$("exam-tab .remove").onclick = function() { // Remove diagnosis
+    const node = $('exam-tab diagnoses').lastChild;
+    if (!node || !node.getAttribute) return;
+    const id = +node.getAttribute("diagnosis-id");
+    currentVisit.diagnoses.splice(currentVisit.diagnoses.findIndex(q => q.id === id), 1);
+    $('exam-tab diagnoses').removeChild(node);
+    socket.emit("delete diagnosis", { visit: currentVisit.id, id, patient: currentPatient.id });
+}
+
+socket.on("new diagnosis", ({ id, patient, visit }) => {
+    const pat = patients.find(p => p.id === patient);
+    const vis = pat.visits.find(v => v.id === visit);
+    const diag = new Diagnosis({ id, patient, visit });
+    vis.diagnoses.push(diag);
+
+    if (currentPatient && currentVisit && currentPatient.id === patient && currentVisit.id === visit) {
+        addDiagnosisStructure(diag);
+    }
+});
+
+socket.on("upd diagnosis", ({ id, patient, visit, field, value }) => {
+    const pat = patients.find(p => p.id === patient);
+    const vis = pat.visits.find(v => v.id === visit);
+    const diag = vis.diagnoses.find(d => d.id === id);
+    diag[field] = value;
+
+    if (currentPatient && currentVisit && currentPatient.id === patient && currentVisit.id === visit) {
+        $(`diagnoses row[diagnosis-id="${id}"] .ediagnosis` + (field === "notes" ? "Notes" : "")).value = value;
+    }
+
+});
+
+socket.on("delete diagnosis", ({ id, patient, visit }) => {
+    const pat = patients.find(p => p.id === patient);
+    const vis = pat.visits.find(v => v.id === visit);
+    const inx = vis.diagnoses.findIndex(d => d.id === id);
+    if (inx > -1) vis.diagnoses.splice(inx, 1);
+
+    if (currentPatient && currentVisit && currentVisit.id === visit && currentPatient.id === patient) {
+        const el = $(`diagnoses row[diagnosis-id="${id}"]`);
+        if (el) el.parentNode.removeChild(el);
+    }
+});
+
+$('exam-tab .treatmentPlan h2 button').onclick = function() { // Add Treatment
     const createdAt = Date.now();
     const med = new Medication({ createdAt, patient: currentPatient.id, visit: currentVisit.id, id: currentVisit.nextMedicationID() });
     currentVisit.pharmacy.push(med);

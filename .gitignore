@@ -1,4 +1,5 @@
 node_modules/
+scripts/
 package-lock.json
 data.db
 data.db.*

@@ -363,30 +363,33 @@
                                     <p> <textarea class="enotes" cols="30" rows="10" autocomplete="off" placeholder="Exam Notes"></textarea> </p>
                                 </div>
                                 <div>
-                                    <h2> Diagnosis </h2>
+                                    <h2> Diagnoses <button class="add"> Add </button> <button class="remove red"> Remove </button>  </h2>
                                     <row>
                                         <input placeholder="Diagnosis" list="diagnosisList" class="ediagnosis" autocomplete="off" />
                                         <input placeholder="Diagnosis Notes" class="ediagnosisnotes" autocomplete="off" />
-                                        <datalist id="diagnosisList">
-                                            <option value="Cardiological"></option>
-                                            <option value="Dental"></option>
-                                            <option value="Dermatological"></option>
-                                            <option value="Gastrointestinal"></option>
-                                            <option value="Genital"></option>
-                                            <option value="Neurological"></option>
-                                            <option value="Ophthalmological"></option>
-                                            <option value="Respiratory"></option>
-                                            <option value="Traumatic"></option>
-                                            <option value="Urinary"></option>
-                                            <option value="Psychological"></option>
-                                            <option value="Other"></option>
-                                        </datalist>
                                     </row>
+                                    <diagnoses>
+                                        <!-- is gonna be full of <row>s -->
+                                    </diagnoses>
+                                    <datalist id="diagnosisList">
+                                        <option value="Cardiological"></option>
+                                        <option value="Dental"></option>
+                                        <option value="Dermatological"></option>
+                                        <option value="Gastrointestinal"></option>
+                                        <option value="Genital"></option>
+                                        <option value="Neurological"></option>
+                                        <option value="Ophthalmological"></option>
+                                        <option value="Respiratory"></option>
+                                        <option value="Traumatic"></option>
+                                        <option value="Urinary"></option>
+                                        <option value="Psychological"></option>
+                                        <option value="Other"></option>
+                                    </datalist>
                                 </div>
                                 <div class="mid">
                                     <p> <input type="checkbox" /> Patient was referred to the hospital. </p>
                                 </div>
-                                <div>
+                                <div class="treatmentPlan">
                                     <h2> Treatment Plan <button> Add </button> </h2>
                                     <treatments-list>
                                         //

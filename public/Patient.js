@@ -15,6 +15,16 @@ class Medication {
     }
 }
 
+class Diagnosis {
+    constructor(data) {
+        this.id = data.id;
+        this.patient = data.patient;
+        this.visit = data.visit;
+        this.diagnosis = data.diagnosis || "";
+        this.notes = data.notes || "";
+    }
+}
+
 class Visit {
     constructor(data) {
         this.id = data.id;
@@ -43,12 +53,23 @@ class Visit {
 
         /** @type {Medication[]} */
         this.pharmacy = [];
+
+        /** @type {Diagnosis[]} */
+        this.diagnoses = [];
     }
 
     nextMedicationID() {
         let id = 1;
         for (const med of this.pharmacy) {
             if (med.id >= id) id = med.id + 1;
+        }
+        return id;
+    }
+
+    nextDiagnosisID() {
+        let id = 1;
+        for (const diag of this.diagnoses) {
+            if (diag.id >= id) id = diag.id + 1;
         }
         return id;
     }
