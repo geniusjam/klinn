@@ -170,6 +170,10 @@ const init = async () => {
         await db.run(`UPDATE history_${type} SET ${field} = ? WHERE id = ? AND patient = ?`, value, id, patient);
     }
 
+    async function getMedication(id, patient, visit) {
+        return await db.get("SELECT * FROM pharmacy WHERE id = ? AND patient = ? AND visit = ?", id, patient, visit);
+    }
+
     async function updateMedication(id, patient, visit, field, value) {
         await db.run(`UPDATE pharmacy SET ${field} = ? WHERE id = ? AND patient = ? AND visit = ?`, value, id, patient, visit);
     }
@@ -224,7 +228,7 @@ const init = async () => {
         getVisitsOf, getPatients, getPatientsByName, getAllPatients, getAllVisits, updateVisit,
         updatePatient, deletePatient, getAllPharmacy, createMedication, updateMedication, deleteMedication,
         deleteVisit, createHistory, getAllHistory, updateHistory, deleteHistory, updatePatientPartial,
-        createDiagnosis, getAllDiagnoses, updateDiagnosis, deleteDiagnosis };
+        createDiagnosis, getAllDiagnoses, updateDiagnosis, deleteDiagnosis, getMedication };
 };
 
 module.exports = init;

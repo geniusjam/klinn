@@ -69,8 +69,24 @@
                     <button class="forward"> &gt; </button>
                     <span class="foot"> 1-50 of 0 </span>
                 </div>
+                <div>
+                    <button id="storageButton"> Storage </button>
+                </div>
             </footer>
         </patients>
+        <storage-page>
+            <header>
+                <div> <button> Back </button> </div>
+            </header>
+            <div>
+                <button id="import"> Import CSV </button> <input class="hidden" type="file" id="storageFile" />
+            </div>
+            <div>
+                <p> Searcy by name: <input type="text" autocomplete="off" id="storageFilter" /> </p>
+                <table>
+                </table>
+            </div>
+        </storage-page>
         <patient-page>
             <overlay>
                 <fixed>
@@ -409,6 +425,17 @@
         </patient-page>
 
         <structures>
+            <storage-table>
+                <table>
+                    <tr>
+                        <th> Name </th>
+                        <th> Dosage </th>
+                        <th> Presentation </th>
+                        <th> Dispensible </th>
+                        <th> Expiration </th>
+                    </tr>
+                </table>
+            </storage-table>
             <patient>
                 <div>
                     <!-- <img src="account.png" /> -->

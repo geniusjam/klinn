@@ -19,7 +19,7 @@ overlay {
     justify-content: center;
 }
 
-patients, patient-page, overlay {
+patients, storage-page, patient-page, overlay {
     display: none;
 }
 
@@ -105,6 +105,23 @@ patient {
     cursor: pointer;
     margin: 0.3em 0;
     background-color: rgb(255, 238, 231);
+}
+
+storage-page {
+    flex-direction: column;
+    height: 100%;
+}
+
+storage-page header {
+    margin-bottom: 3em;
+}
+
+storage-page td, storage-page th {
+    margin: 0.2em 0.4em;
+    padding: 0.1em 0.4em;
+    border: rgb(83, 183, 223) 3px solid;
+
+    font-weight: 500;
 }
 
 patients {
@@ -542,6 +559,15 @@ no-data {
 
 no-data:only-child {
     display: block;
+}
+
+footer {
+    display: flex;
+}
+
+footer>div:nth-child(1) {
+    flex-grow: 1;
+    flex-shrink: 1;
 }
 
 @media screen and (max-width: 650px) {

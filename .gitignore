@@ -3,5 +3,7 @@ scripts/
 package-lock.json
 data.db
 data.db.*
+storage.db
+storage.db.*
 run.bat
 medications.txt

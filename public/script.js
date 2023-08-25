@@ -930,6 +930,142 @@ socket.on("upd medication", ({ id, patient: patientId, visit: visitId, field, va
     }
 });
 
+socket.on("drug compliant", ({ id, patient, visit, value, inventory }) => {
+    const pat = patients.find(p => p.id === patient);
+    /** @type {Visit} */
+    const vis = pat.visits.find(v => v.id === visit);
+    const med = vis.pharmacy.find(m => m.id === id);
+    alert("We do not have that much " + med.drug + "! Setting drug back to " + value + "\nInventory: " + inventory);
+    med.drug = value;
+    if (currentPatient && currentVisit && currentPatient.id === patient && currentVisit.id === visit) {
+        $(`treatments-list treatment[medication-id="${id}"] .mdrug`).value = value;
+        $(`medications-list medication[medication-id="${id}"] .mdrug`).innerText = value;
+    }
+});
+
+socket.on("dispense complaint", ({ id, patient, visit, value, inventory }) => {
+    const pat = patients.find(p => p.id === patient);
+    /** @type {Visit} */
+    const vis = pat.visits.find(v => v.id === visit);
+    const med = vis.pharmacy.find(m => m.id === id);
+    alert("We do not have that much " + med.drug + "! Setting dispense back to " + value + "\nInventory: " + inventory);
+    med.dispense = value;
+    if (currentPatient && currentVisit && currentPatient.id === patient && currentVisit.id === visit) {
+        $(`treatments-list treatment[medication-id="${id}"] .mdispense`).value = value;
+        $(`medications-list medication[medication-id="${id}"] .mdispense`).innerText = value;
+    }
+});
+
+$("storage-page button").onclick = () => {
+    // close storage page, open patients list
+    $("storage-page").style.display = 'none';
+    $("patients").style.display = 'flex';
+};
+
+$('#storageButton').onclick = () => {
+    // open storage page
+    $('patients').style.display = 'none';
+    $('storage-page').style.display = 'flex';
+    $('storage-page table').innerHTML = $('structures storage-table table').innerHTML;
+};
+
+$("storage-page #import").onclick = () => $("storage-page #storageFile").click();
+
+function CSVtoArray(text) {
+    let p = "",
+        row = [""],
+        ret = [row],
+        i = 0,
+        r = 0,
+        s = !0,
+        l;
+    for (l in text) {
+        l = text[l];
+        if ('"' === l) {
+            if (s && l === p) row[i] += l;
+            s = !s;
+        } else if ("," === l && s) l = row[++i] = "";
+        else if ("\n" === l && s) {
+            if ("\r" === p) row[i] = row[i].slice(0, -1);
+            row = ret[++r] = [(l = "")];
+            i = 0;
+        } else row[i] += l;
+        p = l;
+    }
+    return ret;
+}
+
+$("storage-page #storageFile").onchange = function() {
+    if (!this.files || this.files.length < 1) return console.log("import canceled");
+    const fr = new FileReader();
+    fr.onload = () => {
+        // handle fr.result
+        const table = CSVtoArray(fr.result).slice(1).filter(q => q.length >= 8);
+        for (const i in table) { // auto-fill
+            for (const j in table[i]) {
+                if (i > 0 && table[i][j] === "")
+                    table[i][j] = table[i-1][j];
+            }
+        }
+        console.log("The csv looks like", table.slice(0, 20));
+        const drugs = table.map(w => ({
+            name: w[0],
+            presentation: w[1],
+            dosage: w[2],
+            expiration: w[3],
+            dispensible: +w[7], // parse number
+            category: "" // TODO
+        })).filter(drug => drug.name && drug.presentation);
+        if (drugs.length < 1) return console.log("No drugs in the file.");
+        if (!confirm(`This file has ${drugs.length} drugs. Continue?`)) return;
+        console.log(drugs);
+        socket.emit("import drugs", drugs);
+    };
+    fr.readAsText(this.files[0]);
+};
+
+let storageFilterTimeout = null;
+$("#storageFilter").oninput = function() {
+    if (storageFilterTimeout !== null) window.clearInterval(storageFilterTimeout);
+    storageFilterTimeout = setTimeout(() => {
+        // search
+        console.log(this.value)
+        socket.emit("storage search", this.value);
+        storageFilterTimeout = null;
+    }, 300);
+}
+
+socket.on("search result", data => {
+    $('storage-page table').innerHTML = $('structures storage-table table').innerHTML;
+    console.log(data)
+    for (const drug of data) {
+        const tr = document.createElement("tr");
+        let td;
+
+        td = document.createElement("td");
+        td.innerText = drug.name;
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerText = drug.dosage;
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerText = drug.presentation;
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerText = drug.dispensible;
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerText = drug.expiration;
+        tr.appendChild(td);
+
+        $('storage-page table tbody').appendChild(tr);
+    }
+});
+
 socket.on("delete medication", ({ id, patient: patientId, visit: visitId }) => {
     const patient = patients.find(p => patientId === p.id);
     const visit = patient.visits.find(v => v.id === visitId);

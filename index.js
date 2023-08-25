@@ -3,7 +3,10 @@ const path = require("path");
 const fs = require("fs");
 const app = express();
 const Database = require("./db");
-let db;
+const Storage = require("./storage");
+let db, storage;
+/** @type {Storage.Drug[]} */
+let inventory;
 
 const medications = fs.readFileSync("medications.txt", "utf8").split("\n").filter(q => q);
 
@@ -17,7 +20,19 @@ console.log("The address is " + getIPAddress() + ":1402");
 const server = app.listen({ port: 1402, ip: getIPAddress() }, async () => {
     console.log("Server is ready.");
     db = await Database();
+    storage = await Storage.init();
+    inventory = (await storage.getAllInventory()).map(w => new Storage.Drug(w));
+    console.log("Inventory ready.");
 });
+
+const DRUG_REGEXP = /^(.+) \((.*)\) \((.*)\)$/;
+
+/** Find drug in inventory */
+function findDrug(match) {
+    if (!match) return null;
+    return inventory.find(item => item.name === match[1] && item.dosage === match[2] &&
+        item.presentation === match[3]) || null;
+}
 
 const { Server } = require("socket.io");
 const io = new Server(server);
@@ -37,7 +52,7 @@ io.on("connection", async socket => {
         const acc = await db.getAccountById(data.id);
         if (!acc) return;
         if (acc.password !== data.password) return socket.emit("wrong password");
-        socket.emit("welcome", { diagnoses: await db.getAllDiagnoses(), medications, visits: await db.getAllVisits(), patients: await db.getAllPatients(), pharmacy: await db.getAllPharmacy(), history: await db.getAllHistory() }); // TODO: mode for 0-50?
+        socket.emit("welcome", { diagnoses: await db.getAllDiagnoses(), medications: inventory.map(i => `${i.name} (${i.dosage}) (${i.presentation})`), visits: await db.getAllVisits(), patients: await db.getAllPatients(), pharmacy: await db.getAllPharmacy(), history: await db.getAllHistory() }); // TODO: mode for 0-50?
         account = acc;
         sockets.push(socket);
         sockets.forEach(s => s.emit("online update", sockets.length-1));
@@ -165,11 +180,88 @@ io.on("connection", async socket => {
         // TODO: type checking
         // TODO: check the field 
 
-        // change db
-        await db.updateMedication(data.id, data.patient, data.visit, data.field, data.value);
+        // get the previous version of the medication
+        // for use in the storage section later
+        const old = await db.getMedication(data.id, data.patient, data.visit);
+        if (!old.drug) old.drug = "";
+        if (!old.dispense) old.dispense = 0;
 
-        // send update to subscribers
-        sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("upd medication", data)) // TODO: some kind of data sanitization for "data"?
+
+        // STORAGE START
+        const field = data.field; // alias
+        const res = await (async () => {
+            if (field !== "drug" && field !== "dispense") return true; // the field either has to be 'drug' or 'dispense'
+            const logSuffix = `Patient, visit and medication id: ${data.patient}#${data.visit}#${data.id} Account: ${account.name} (${account.id})`;
+            const oldmatch = findDrug(old.drug.match(DRUG_REGEXP));
+            if (field === "dispense") {
+                if (old.dispense === data.value) return false; // there was no change
+                if (!oldmatch) return true; // could not find drug :(
+                const medSuffix = `Medication: ${oldmatch.name} (${oldmatch.dosage}) (${oldmatch.presentation}).`;
+                if (old.dispense > data.value) {
+                    // more for the inventory!!
+                    // add to inventory (old.dispense - data.value)
+                    await storage.modifyDispensible(oldmatch, "+", old.dispense - data.value, {
+                        type: "DISP_OGN", // dispense, old greater than new
+                        description: `Dispense was changed with a smaller value. Adding more to the storage. ${medSuffix} ${logSuffix}`
+                    });
+                    inventory.find(i => i.name === oldmatch.name && i.dosage === oldmatch.dosage && i.presentation === oldmatch.presentation)
+                        .dispensible += old.dispense - data.value;
+                } else {
+                    // less for the inventory :(
+                    // bound check!!
+                    const toSubtract = data.value - old.dispense;
+                    if (oldmatch.dispensible < toSubtract) {
+                        // oops. this is where things get a little tense.
+                        socket.emit("dispense complaint", { ...data, value: old.dispense, inventory: oldmatch.dispensible }); // TODO: a better handling of "data"?
+                        return false;
+                    }
+                    // subtract from inventory (data.value - old.dispense)
+                    await storage.modifyDispensible(oldmatch, "-", data.value - old.dispense, {
+                        type: "DISP_NGO", // dispense, new greater than old
+                        description: `Dispense was changed with a bigger value. Subtracting from storage. ${medSuffix} ${logSuffix}`
+                    });
+                    inventory.find(i => i.name === oldmatch.name && i.dosage === oldmatch.dosage && i.presentation === oldmatch.presentation)
+                        .dispensible -= data.value - old.dispense;
+                }
+            } else {
+                if (oldmatch) {
+                    // add (old.dispense) to oldmatch!!
+                    const medSuffix = `Medication: ${oldmatch.name} (${oldmatch.dosage}) (${oldmatch.presentation}).`;
+                    await storage.modifyDispensible(oldmatch, "+", old.dispense, {
+                        type: "DRUG_OLD", // drug, subtract from old
+                        description: `The drug name was changed from a recognizable drug. Adding back to the storage. ${medSuffix} ${logSuffix}`
+                    });
+                    inventory.find(i => i.name === oldmatch.name && i.dosage === oldmatch.dosage && i.presentation === oldmatch.presentation)
+                        .dispensible += old.dispense;
+                }
+                const newmatch = findDrug(data.value.match(DRUG_REGEXP));
+                if (!newmatch) return true; // no match :(
+                // bound check!!
+                if (newmatch.dispensible < old.dispense) {
+                    socket.emit("drug complaint", { ...data, value: old.drug, inventory: oldmatch.dispensible }); // TODO: a better handling of "data"?
+                    return false;
+                }
+                // remove (old.dispense) from newmatch
+                const medSuffix = `Medication: ${newmatch.name} (${newmatch.dosage}) (${newmatch.presentation}).`;
+                await storage.modifyDispensible(newmatch, "-", old.dispense, {
+                    type: "DRUG_NEW", // drug, add to new
+                    description: `The new drug is recognizable. Subtracting from storage. ${medSuffix} ${logSuffix}`
+                });
+                inventory.find(i => i.name === newmatch.name && i.dosage === newmatch.dosage && i.presentation === newmatch.presentation)
+                    .dispensible -= old.dispense;
+            }
+
+            return true;
+        })();
+
+        if (res) { // this update was verified by the storage procedures.
+            // change db
+            await db.updateMedication(data.id, data.patient, data.visit, data.field, data.value);
+
+            // send update to subscribers
+            sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("upd medication", data)); // TODO: some kind of data sanitization for "data"?
+        }
+        // STORAGE END
     });
 
     socket.on("upd visit", async data => {
@@ -224,9 +316,56 @@ io.on("connection", async socket => {
 
     socket.on("delete medication", async data => {
         if (!account || !data || typeof data.patient !== "string" || typeof data.visit !== "number" || typeof data.id !== "number") return;
+
+        // get the medication for storage purposes
+        const old = await db.getMedication(data.id, data.patient, data.visit);
+        if (!old.drug) old.drug = "";
+        if (!old.dispense) old.dispense = 0;
+
         await db.deleteMedication(data.id, data.patient, data.visit);
 
         sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("delete medication", { id: data.id, visit: data.visit, patient: data.patient }));
+
+        // STORAGE
+        const match = findDrug(old.drug.match(DRUG_REGEXP));
+        if (!match) return;
+
+        const medSuffix = `Medication: ${match.name} (${match.dosage}) (${match.presentation}).`;
+        const logSuffix = `${medSuffix} Patient, visit and medication id: ${data.patient}#${data.visit}#${data.id} Account: ${account.name} (${account.id})`;
+
+        // add back
+        await storage.modifyDispensible(match, "+", old.dispense, {
+            type: "DEL", // deletion
+            description: `Medication was deleted. Adding back to storage. ${logSuffix}`
+        });
+        inventory.find(i => i.name === match.name && i.dosage === match.dosage && i.presentation === match.presentation)
+            .dispensible += old.dispense;
+    });
+
+    socket.on("import drugs", async data => {
+        if (!account || !data || !(data instanceof Array)) return;
+        // TODO: don't trust data.
+        const modifications = [];
+        const recents = [];
+        for (const drug of data) {
+            const item = inventory.find(i => i.name === drug.name && i.dosage === drug.dosage && i.presentation === drug.presentation);
+            if (item) {
+                item.dispensible += drug.dispensible;
+                modifications.push(drug);
+            } else {
+                inventory.push(new Storage.Drug(drug));
+                recents.push(drug);
+            }
+        }
+
+        await storage.addAll(modifications);
+        await storage.createAll(recents);
+    });
+
+    socket.on("storage search", async data => {
+        if (typeof data !== "string" || !account) return;
+
+        socket.emit("search result", await storage.searchDrug(data.value));
     });
 
     socket.on("delete diagnosis", async data => {
