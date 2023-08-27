@@ -7,10 +7,9 @@ It was designed for mobile clinics in rural areas, where there may be no interne
 * Keep the name, lastname, gender and birthdate of each patient.
 * Separate visits help you fill information without the need of creating a new patient for the same person.
 * Reports! You are able to choose dates in between which the application will analyze the visits and produce a `.csv` report.
+* Storage! Import your inventory into the application. The application will then start updating the inventory based on prescriptions. It will warn the doctor when they prescribe some amount that is more than what you have in the inventory.
 * Synchronization between clients.
 * Filter patients by full name.
-* See the medication given to each patient in each visit.
-* See the exam doctor, exam notes, diagnosis, Blood Glucose Test results, and complaints of each patient.
 * You can make a backup by simply copy-pasting the `data.db` file.
 * Responsive design. Use the application on mobile (It's a bit of a WIP but the design is currently bearable)
 * Open source!
