@@ -995,8 +995,7 @@ function CSVtoArray(text) {
     return ret;
 }
 
-$("storage-page #storageFile").onchange = function() {
-    if (!this.files || this.files.length < 1) return console.log("import canceled");
+function parseDrugs(file, cb) {
     const fr = new FileReader();
     fr.onload = () => {
         // handle fr.result
@@ -1027,12 +1026,19 @@ $("storage-page #storageFile").onchange = function() {
             dispensible: +w[7], // parse number
             category: w[9]
         })).filter(drug => drug.name && drug.presentation);
+        cb(drugs, categories);
+    };
+    fr.readAsText(file);
+}
+
+$("storage-page #storageFile").onchange = function() {
+    if (!this.files || this.files.length < 1) return console.log("import canceled");
+    parseDrugs(this.files[0], (drugs, categories) => {
         if (drugs.length < 1) return console.log("No dispensible drugs in the file.");
         if (!confirm(`This file has ${drugs.length} drugs.\n${categories.length} categories were found.\nContinue?`)) return;
         console.log(drugs);
         socket.emit("import drugs", drugs);
-    };
-    fr.readAsText(this.files[0]);
+    });
 };
 
 let lastSearchResult = [];
@@ -1050,6 +1056,87 @@ $("#exportStorage").onclick = function() {
     }
 
     download("storage.csv", csv);
+}
+
+$("input.validate").oninput = function() {
+    $("span.validate").innerText = new Date(this.value);
+}
+
+$("button.validate").onclick = () => {
+    if (isNaN(new Date($("input.validate").value).getTime())) return alert("Invalid Date.");
+    $("input.validate.hidden").click();
+};
+
+function sleep(ms) {
+    return new Promise((res, rej) => {
+        setTimeout(() => res(), ms)
+    });
+}
+
+$("input.validate.hidden").onchange = async function() {
+    if (!this.files || !this.files.length) return; // canceled
+    const since = new Date($("input.validate").value).getTime();
+    if (isNaN(since)) return;
+    const drugs = [];
+    for (const file of this.files) {
+        parseDrugs(file, d => d.forEach(q => {
+            const i = drugs.findIndex(drug => drug.name === q.name && drug.presentation === q.presentation &&
+                drug.dosage === q.dosage);
+            if (i > -1) {
+                drugs[i].dispensible += q.dispensible;
+            } else {
+                drugs.push(q);
+            }
+        }));
+    }
+    // TODO: find a proper way to handle parseDrugs calls
+    await sleep(3000); // 3 seconds of arbitrary sleep for compensation of the parseDrugs calls
+    // read all the files.
+
+    // compile medications:
+    const meds = [];
+    patients.forEach(p => p.visits.filter(vis => vis.date >= since).forEach(vis => vis.pharmacy.forEach(med => meds.push({ ...med, where: `${p.name} ${p.lastname}#${p.id}#${vis.id}` }))));
+    // start decreasing each one...
+    let unrecs = 0; // nr of unrecognized treatments
+    for (const med of meds) {
+        const match = med.drug.match(/^(.+) \((.*)\) \((.*)\)$/);
+        const i = !match ? -1 : drugs.findIndex(item => item.name === match[1] && item.dosage === match[2] &&
+            item.presentation === match[3]);
+        if (i < 0) {
+            console.log(`Unrecognized treatment`, med);
+            unrecs++;
+            continue;
+        }
+
+        drugs[i].dispensible -= med.dispense;
+    }
+
+    // compare drugs against the current inventory
+    let missing = 0; // nr of missing medications
+    let absences = 0, extras = 0; // nr of unmatches
+    for (const drug of drugs) {
+        const i = lastSearchResult.findIndex(q => drug.name === q.name && drug.presentation === q.presentation &&
+            drug.dosage === q.dosage);
+        if (i < 0) {
+            missing++;
+            console.log("missing", drug);
+            continue;
+        }
+        const amount = lastSearchResult[i].dispensible;
+        if (amount < drug.dispensible) {
+            absences++;
+            console.log("Absent drug, found = " + amount + " expected = " + drug.dispensible, drug);
+            continue;
+        }
+        if (amount > drug.dispensible) {
+            extras++;
+            console.log("Extra drug, found = " + amount + " expected = " + drug.dispensible, drug);
+            continue;
+        }
+    }
+    // report
+    alert(`Analysis complete.\n${unrecs} unrecognized treatments\n${missing} missing drugs in storage\n`
+        + `${absences} absences, ${extras} extras\n\nStatus: ${missing || absences || extras ? "in" : ""}valid`);
 }
 
 let storageFilterTimeout = null;

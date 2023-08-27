@@ -116,6 +116,10 @@ storage-page header {
     margin-bottom: 3em;
 }
 
+storage-page>div {
+    margin-bottom: 3em;
+}
+
 storage-page td, storage-page th {
     margin: 0.2em 0.4em;
     padding: 0.1em 0.4em;
