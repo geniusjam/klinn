@@ -1,15 +1,11 @@
 const express = require('express');
 const path = require("path");
-const fs = require("fs");
 const app = express();
 const Database = require("./db");
 const Storage = require("./storage");
 let db, storage;
 /** @type {Storage.Drug[]} */
 let inventory;
-
-const medications = fs.readFileSync("medications.txt", "utf8").split("\n").filter(q => q);
-
 app.use(express.static("public/"));
 
 app.get('/', function (req, res) {
@@ -358,14 +354,14 @@ io.on("connection", async socket => {
             }
         }
 
-        await storage.addAll(modifications);
-        await storage.createAll(recents);
+        if (modifications.length > 0) await storage.addAll(modifications);
+        if (recents.length > 0) await storage.createAll(recents);
     });
 
     socket.on("storage search", async data => {
         if (typeof data !== "string" || !account) return;
 
-        socket.emit("search result", await storage.searchDrug(data.value));
+        socket.emit("search result", await storage.searchDrug(data));
     });
 
     socket.on("delete diagnosis", async data => {

@@ -1008,7 +1008,7 @@ $("storage-page #storageFile").onchange = function() {
             }
         }
         console.log("The csv looks like", table.slice(0, 20));
-        const drugs = table.map(w => ({
+        const drugsUnfiltered = table.map(w => ({
             name: w[0],
             presentation: w[1],
             dosage: w[2],
@@ -1016,8 +1016,9 @@ $("storage-page #storageFile").onchange = function() {
             dispensible: +w[7], // parse number
             category: "" // TODO
         })).filter(drug => drug.name && drug.presentation);
-        if (drugs.length < 1) return console.log("No drugs in the file.");
-        if (!confirm(`This file has ${drugs.length} drugs. Continue?`)) return;
+        const drugs = drugsUnfiltered.filter(d => d.dispensible);
+        if (drugs.length < 1) return console.log("No dispensible drugs in the file.");
+        if (!confirm(`This file has ${drugsUnfiltered.length} drugs, ${drugs.length} of them with dispensible != 0. Continue?`)) return;
         console.log(drugs);
         socket.emit("import drugs", drugs);
     };
