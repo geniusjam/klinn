@@ -1000,25 +1000,35 @@ $("storage-page #storageFile").onchange = function() {
     const fr = new FileReader();
     fr.onload = () => {
         // handle fr.result
-        const table = CSVtoArray(fr.result).slice(1).filter(q => q.length >= 8);
-        for (const i in table) { // auto-fill
-            for (const j in table[i]) {
-                if (i > 0 && table[i][j] === "")
-                    table[i][j] = table[i-1][j];
+        const table = CSVtoArray(fr.result).slice(1);
+        const categories = table.map((q, i) => (q[0].toUpperCase() === q[0] && !q.slice(1).find(z => z)) ? [q[0], i] : 0).filter(q => q !== 0);
+        console.log("found categories", categories);
+        
+        const rows = table.filter(q => !(q[0].toUpperCase() === q[0] && !q.slice(1).find(z => z)));
+        let category = "", cati = -1, linei = 0;
+        for (const i in rows) { // auto-fill
+            if (categories.length >= cati+2 && categories[cati+1][1] <= linei) {
+                linei++;
+                cati++;
+                category = categories[cati][0];
             }
+            for (const j in rows[i]) {
+                if (i > 0 && rows[i][j] === "")
+                    rows[i][j] = rows[i-1][j];
+            }
+            rows[i][9] = category;
+            linei++;
         }
-        console.log("The csv looks like", table.slice(0, 20));
-        const drugsUnfiltered = table.map(w => ({
+        const drugs = rows.map(w => ({
             name: w[0],
             presentation: w[1],
             dosage: w[2],
             expiration: w[3],
             dispensible: +w[7], // parse number
-            category: "" // TODO
+            category: w[9]
         })).filter(drug => drug.name && drug.presentation);
-        const drugs = drugsUnfiltered.filter(d => d.dispensible);
         if (drugs.length < 1) return console.log("No dispensible drugs in the file.");
-        if (!confirm(`This file has ${drugsUnfiltered.length} drugs, ${drugs.length} of them with dispensible != 0. Continue?`)) return;
+        if (!confirm(`This file has ${drugs.length} drugs.\n${categories.length} categories were found.\nContinue?`)) return;
         console.log(drugs);
         socket.emit("import drugs", drugs);
     };
@@ -1079,6 +1089,10 @@ socket.on("search result", data => {
 
         td = document.createElement("td");
         td.innerText = drug.expiration;
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerText = drug.category || "";
         tr.appendChild(td);
 
         $('storage-page table tbody').appendChild(tr);

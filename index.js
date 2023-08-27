@@ -347,15 +347,15 @@ io.on("connection", async socket => {
             const item = inventory.find(i => i.name === drug.name && i.dosage === drug.dosage && i.presentation === drug.presentation);
             if (item) {
                 item.dispensible += drug.dispensible;
-                modifications.push(drug);
+                if (drug.dispensible) modifications.push(drug);
             } else {
                 inventory.push(new Storage.Drug(drug));
                 recents.push(drug);
             }
         }
 
-        if (modifications.length > 0) await storage.addAll(modifications);
         if (recents.length > 0) await storage.createAll(recents);
+        if (modifications.length > 0) await storage.addAll(modifications);
     });
 
     socket.on("storage search", async data => {
