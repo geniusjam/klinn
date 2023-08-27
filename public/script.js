@@ -1025,12 +1025,28 @@ $("storage-page #storageFile").onchange = function() {
     fr.readAsText(this.files[0]);
 };
 
+let lastSearchResult = [];
+$("#exportStorage").onclick = function() {
+    if ($('storage-page table tbody').children.length <= 1) return alert("The table is empty!");
+
+    let csv = "Medication,Presentation,Dosage,Expiration,Dispensible,Category\n";
+    for (const drug of lastSearchResult) {
+        csv += '"' + drug.name.replace(/"/g, '""') + '",'
+            + '"' + drug.presentation.replace(/"/g, '""') + '",'
+            + '"' + drug.dosage.replace(/"/g, '""') + '",'
+            + '"' + drug.expiration.replace(/"/g, '""') + '",'
+            + drug.dispensible + ','
+            + '"' + (drug.category || "").replace(/"/g, '""') + '"\n';
+    }
+
+    download("storage.csv", csv);
+}
+
 let storageFilterTimeout = null;
 $("#storageFilter").oninput = function() {
     if (storageFilterTimeout !== null) window.clearInterval(storageFilterTimeout);
     storageFilterTimeout = setTimeout(() => {
         // search
-        console.log(this.value)
         socket.emit("storage search", this.value);
         storageFilterTimeout = null;
     }, 300);
@@ -1038,7 +1054,9 @@ $("#storageFilter").oninput = function() {
 
 socket.on("search result", data => {
     $('storage-page table').innerHTML = $('structures storage-table table').innerHTML;
-    console.log(data)
+    lastSearchResult = data.sort((a,b) => a.dispensible < 1 && b.dispensible > 0 ? 1 :
+        b.dispensible < 1 && a.dispensible > 0 ? -1 :
+        0);
     for (const drug of data) {
         const tr = document.createElement("tr");
         let td;

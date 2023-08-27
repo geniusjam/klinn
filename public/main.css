@@ -361,6 +361,14 @@ exam-tab input:not(input[type="checkbox"]) {
     width: 30vw;
 }
 
+treatment .mdrug {
+    width: 50vw !important;
+}
+
+treatment .mdispense {
+    width: 10vw !important;
+}
+
 exam-tab>* {
     padding: 1.5rem;
 }
@@ -488,7 +496,7 @@ treatment row column.shrink, medication>.top row column.shrink {
 }
 
 treatment row.foot input {
-    min-width: 70%;
+    min-width: 80%;
     margin-left: 0.5em;
 }
 
@@ -593,6 +601,10 @@ footer>div:nth-child(1) {
 @media screen and (max-width: 720px) {
     exam-tab div row {
         flex-direction: column;
+    }
+
+    exam-tab input:not(input[type="checkbox"]) {
+        width: 70vw;
     }
 
     medication {

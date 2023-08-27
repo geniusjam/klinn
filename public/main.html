@@ -80,6 +80,7 @@
             </header>
             <div>
                 <button id="import"> Import CSV </button> <input class="hidden" type="file" id="storageFile" />
+                <button id="exportStorage"> Export Search (CSV) </button>
             </div>
             <div>
                 <p> Searcy by name: <input type="text" autocomplete="off" id="storageFilter" /> </p>
@@ -456,7 +457,7 @@
             <treatment>
                 <row>
                     <column> Drug: <input type="text" autocomplete="off" class="mdrug" list="medicationList" /> </column>
-                    <column> Dispense: <input autocomplete="off" type="number" class="mdispense" /> </column>
+                    <column style="flex-grow: 3;"> Dispense: <input autocomplete="off" type="number" class="mdispense" /> </column>
                     <column class="shrink"> <button class="red"> - </button> </column>
                 </row>
                 <row class="foot">
