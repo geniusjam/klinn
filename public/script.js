@@ -146,7 +146,7 @@ socket.on("new patient", partial => {
     if ($("patients header .filter").value === ''
         || (patient.name + " " + patient.lastname).toLocaleLowerCase().includes($("patients header .filter").value.toLocaleLowerCase())) {
             currentPatients.unshift(patient);
-            prependPatientStructure(patient);
+            prependPatientStructure(patient); // only disturb the list in this case
         } // only if the search bar is empty!!
 
     updateStats();
@@ -318,7 +318,7 @@ $('patients overlay box button').onclick = () => { // Add Patient
 
     if ($("patients header .filter").value === ''
         || (patient.name + " " + patient.lastname).toLocaleLowerCase().includes($("patients header .filter").value.toLocaleLowerCase())) {
-            currentPatients.unshift(patient);
+            currentPatients.unshift(patient); // only disturb the list in this case
             prependPatientStructure(patient);
         } // only if the search bar is empty !!
 
@@ -688,14 +688,25 @@ $('vitals-tab .vweight').onkeyup = $('vitals-tab .vheight').onkeyup = function()
 
 $('patients header .filter').onkeyup = function() {
     if (this.value === "") currentPatients = [ ...patients ];
-    else if (/^(.+ )?id:\d+$/.test(this.value)) {
-        // search by id AND name
-        const match = this.value.match(/^(.+ )?id:(\d+)$/);
-        const id = match[2];
-        const value = (match[1] || "").toLocaleLowerCase();
-        currentPatients = patients.filter(p => (p.name + " " + p.lastname).toLocaleLowerCase().includes(value) && p.id.startsWith(id));
+    else {
+        const parts = this.value.split(" ");
+        let i = parts.length-1;
+        const filters = [];
+        for (; i >= 0; i--) {
+            const part = parts[i];
+            const match = part.match(/^([a-zA-Z]+):(.+)$/);
+            if (!match) break;
+            if (match[1] === "nationalID") match[1] = "idNumber";
+            filters.push([match[1], match[2]]);
+        }
+        const text = i === -1 ? "" : parts.slice(0, i+1).join(" ").toLowerCase();
+
+        currentPatients = patients.filter(p => (p.name + " " + p.lastname).toLocaleLowerCase().includes(text)
+            && filters.length === filters.filter(f =>
+                typeof p[f[0]] === "undefined" ||
+                    ( typeof p[f[0]] === "number" ? +f[1] === p[f[0]] : p[f[0]].toLowerCase().startsWith(f[1].toLowerCase()) )
+            ).length);
     }
-    else currentPatients = patients.filter(p => (p.name + " " + p.lastname).toLocaleLowerCase().includes(this.value.toLocaleLowerCase()));
     currentPage = 0;
     displayPatients();
 };
