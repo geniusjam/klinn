@@ -166,7 +166,7 @@ io.on("connection", async socket => {
             || typeof data.field !== "string" || typeof data.value === "undefined") return;
         // TODO: checks for data.field and type checking for data.value
 
-        await db.updateDiagnosis(data.id, data.patient, data.visit, data.field, data.visit);
+        await db.updateDiagnosis(data.id, data.patient, data.visit, data.field, data.value);
 
         sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("upd diagnosis", data)); // TODO: data sanitization
     });
