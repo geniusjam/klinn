@@ -688,6 +688,13 @@ $('vitals-tab .vweight').onkeyup = $('vitals-tab .vheight').onkeyup = function()
 
 $('patients header .filter').onkeyup = function() {
     if (this.value === "") currentPatients = [ ...patients ];
+    else if (/^(.+ )?id:\d+$/.test(this.value)) {
+        // search by id AND name
+        const match = this.value.match(/^(.+ )?id:(\d+)$/);
+        const id = match[2];
+        const value = (match[1] || "").toLocaleLowerCase();
+        currentPatients = patients.filter(p => (p.name + " " + p.lastname).toLocaleLowerCase().includes(value) && p.id.startsWith(id));
+    }
     else currentPatients = patients.filter(p => (p.name + " " + p.lastname).toLocaleLowerCase().includes(this.value.toLocaleLowerCase()));
     currentPage = 0;
     displayPatients();
