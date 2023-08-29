@@ -56,8 +56,9 @@ io.on("connection", async socket => {
 
     socket.on("new patient", async data => {
         if (!account || !data || !data.name || !data.lastname || (typeof data.gender !== "number") || !data.birthdate || !data.id || !data.createdAt) return;
+        if (typeof data.idNumber !== "string") data.idNumber = "";
         // TODO: check for types
-        const patient = await db.createPatient(data.id, data.name, data.lastname, data.gender, account.id, data.birthdate, data.createdAt);
+        const patient = await db.createPatient(data.id, data.name, data.lastname, data.gender, account.id, data.birthdate, data.idNumber, data.createdAt);
         sockets.forEach(sock => sock.emit("new patient", patient)); // partial patient
 
         // TODO: find workaround for when two sockets create patients with the same id while they were offline.
@@ -278,9 +279,10 @@ io.on("connection", async socket => {
             || typeof data.birthdate !== "number") return;
         if (!data.isWaiting) data.isWaiting = 0;
         if (!data.whereis) data.whereis = 0;
+        if (typeof data.idNumber !== "string") data.idNumber = "";
         // TODO: type checking for data.id
 
-        await db.updatePatient(data.id, data.name, data.lastname, data.gender, data.birthdate, data.isWaiting, data.whereis);
+        await db.updatePatient(data.id, data.name, data.lastname, data.gender, data.birthdate, data.isWaiting, data.whereis, data.idNumber);
 
         // send update to subscribers
         sockets.filter(s => s.id !== socket.id).forEach(sock => sock.emit("upd patient", data)); // TODO: some kind of data sanitization for "data"?

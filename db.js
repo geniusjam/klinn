@@ -9,7 +9,7 @@ const init = async () => {
 
     await db.exec("CREATE TABLE IF NOT EXISTS accounts (name TEXT, id TEXT, password TEXT);");
     await db.exec("CREATE TABLE IF NOT EXISTS patients (id TEXT PRIMARY KEY, name TEXT, lastname TEXT, gender INTEGER, createdBy TEXT, photo TEXT, lastEditedAt INTEGER, "
-        + "birthdate INTEGER, createdAt INTEGER, waitedFor INTEGER, isWaiting INTEGER, whereis INTEGER, "
+        + "birthdate INTEGER, createdAt INTEGER, waitedFor INTEGER, isWaiting INTEGER, whereis INTEGER, idNumber TEXT"
         // ------- history -------
         // gynecological:
         + "gynecoFirstPeriod INTEGER, gynecoLastPeriod INTEGER, gynecoDuration INTEGER, gynecoRegularity INTEGER, "
@@ -74,6 +74,8 @@ const init = async () => {
     await addColumn('patients', 'postnatalOthers', 'TEXT');
     await addColumn('patients', 'postnatalVaccines', 'TEXT');
 
+    await addColumn("patients", "idNumber", "TEXT")
+
     await addColumn('visits', 'referredToHospital', 'INTEGER'); // boolean // whether the patient was referred to the hospital
 
     // TODO: make accounts dynamic
@@ -94,11 +96,11 @@ const init = async () => {
         return accounts.map(acc => ({ name: acc.name, id: acc.id }));
     }
 
-    async function createPatient(id, name, lastname, gender, createdBy, birthdate, createdAt) {
-        await db.run("INSERT INTO patients(id,name,lastname,gender,createdBy,birthdate,createdAt,lastEditedAt) VALUES (?,?,?,?,?,?,?,?)",
-            id, name, lastname, gender, createdBy, birthdate, createdAt, createdAt);
+    async function createPatient(id, name, lastname, gender, createdBy, birthdate, idNumber, createdAt) {
+        await db.run("INSERT INTO patients(id,name,lastname,gender,createdBy,birthdate,idNumber,createdAt,lastEditedAt) VALUES (?,?,?,?,?,?,?,?,?)",
+            id, name, lastname, gender, createdBy, birthdate, idNumber, createdAt, createdAt);
 
-        return { id, name, lastname, gender, createdBy, birthdate, createdAt }; // partial patient
+        return { id, name, lastname, gender, createdBy, birthdate, createdAt, idNumber }; // partial patient
     }
 
     async function createVisit(id, patient, createdBy, createdAt) {
@@ -190,8 +192,8 @@ const init = async () => {
         await db.run(`UPDATE patients SET ${field} = ? WHERE id = ?`, value, id);
     }
 
-    async function updatePatient(id, name, lastname, gender, birthdate, isWaiting, whereis) {
-        await db.run(`UPDATE patients SET name = ?, lastname = ?, gender = ?, birthdate = ?, isWaiting = ?, whereis = ? WHERE id = ?`, name, lastname, gender, birthdate, isWaiting, whereis, id);
+    async function updatePatient(id, name, lastname, gender, birthdate, isWaiting, whereis, idNumber) {
+        await db.run(`UPDATE patients SET name = ?, lastname = ?, gender = ?, birthdate = ?, isWaiting = ?, whereis = ?, idNumber = ? WHERE id = ?`, name, lastname, gender, birthdate, isWaiting, whereis, idNumber, id);
     }
 
     async function deleteVisit(id, patient) {

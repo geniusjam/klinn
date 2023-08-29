@@ -141,6 +141,7 @@ class Patient {
         this.waitedFor = data.waitedFor || 0;
         this.isWaiting = data.isWaiting || 0;
         this.whereis = data.whereis || 0;
+        this.idNumber = data.idNumber || "";
         this.lastEditedAt = data.lastEditedAt || data.createdAt || Date.now();
 
         this.history = {

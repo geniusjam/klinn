@@ -295,16 +295,24 @@ $('patients overlay box button').onclick = () => { // Add Patient
     const gender = $('patients overlay input[type="radio"][value="0"]').checked ? 0
         : $('patients overlay input[type="radio"][value="1"]').checked ? 1 : 2;
     const birthdate = parseInt($('patients overlay input[type="date"]').value.replace(/-/g, ""));
+    const idNumber = $("patients overlay .idNumber").value;
     const createdAt = Date.now();
     const createdBy = account.id;
     const id = generatePatientId();
 
     if (!birthdate) return alert("No birthday entered.");
 
+    if (patients.find(p => p.name.trim().toLowerCase() === name.trim().toLowerCase() && p.lastname.trim().toLowerCase() === lastname.trim().toLowerCase())) {
+        if (!confirm("There is already a patient with this name.\nAdd the patient anyway?")) return;
+    }
+    if (idNumber && patients.find(p => p.idNumber === idNumber)) {
+        const p = patients.find(p => p.idNumber === idNumber);
+        if (!confirm(`${p.name} ${p.lastname} has the same national ID.\nAdd the patient anyway?`)) return;
+    }
+
     $("patients overlay").style.display = 'none';
 
-    const patient = new Patient({ name, lastname, gender, birthdate, createdAt, createdBy, id });
-
+    const patient = new Patient({ name, lastname, gender, birthdate, createdAt, createdBy, id, idNumber });
     patients.unshift(patient);
     // patients.sort((a,b) => (+a.createdAt > +b.createdAt) ? -1 : 1);
 
@@ -314,7 +322,7 @@ $('patients overlay box button').onclick = () => { // Add Patient
             prependPatientStructure(patient);
         } // only if the search bar is empty !!
 
-    socket.emit("new patient", { name, lastname, gender, birthdate, createdAt, id });
+    socket.emit("new patient", { name, lastname, gender, birthdate, createdAt, id, idNumber });
 };
 
 $("patients-list").onclick = function(event) { // display patient
@@ -1211,9 +1219,11 @@ $('patient-page overlay box button').onclick = function() { // Save patient
     const gender = $('patient-page overlay input[type="radio"][value="0"]').checked ? 0
         : $('patient-page overlay input[type="radio"][value="1"]').checked ? 1 : 2;
     const birthdate = parseInt($('patient-page overlay input[type="date"]').value.replace(/-/g, ""));
+    const idNumber = $('patient-page overlay .idNumber').value;
 
     if (name === currentPatient.name && lastname === currentPatient.lastname
-        && gender === currentPatient.gender && birthdate === currentPatient.birthdate)
+        && gender === currentPatient.gender && birthdate === currentPatient.birthdate
+        && idNumber === currentPatient.idNumber)
         return; // no modifications
     
     // at least 1 modification
@@ -1221,6 +1231,7 @@ $('patient-page overlay box button').onclick = function() { // Save patient
     currentPatient.lastname = lastname;
     currentPatient.gender = gender;
     currentPatient.birthdate = birthdate;
+    currentPatient.idNumber = idNumber;
 
     // update patient-page patient html:
     preparePatientStructure(currentPatient);
@@ -1234,7 +1245,7 @@ $('patient-page overlay box button').onclick = function() { // Save patient
     }
 
 
-    socket.emit("upd patient", { id: currentPatient.id, name, lastname, gender, birthdate, whereis: currentPatient.whereis, isWaiting: currentPatient.isWaiting });
+    socket.emit("upd patient", { id: currentPatient.id, name, lastname, gender, birthdate, whereis: currentPatient.whereis, isWaiting: currentPatient.isWaiting, idNumber });
 
     $('patient-page overlay').style.display = 'none';
 };
@@ -1253,7 +1264,7 @@ socket.on("upd patient partial", ({ id, field, value }) => {
     }
 });
 
-socket.on("upd patient", ({ id, name, lastname, gender, birthdate, whereis, isWaiting }) => {
+socket.on("upd patient", ({ id, name, lastname, gender, birthdate, whereis, isWaiting, idNumber }) => {
     const patient = patients.find(p => p.id === id);
     patient.name = name;
     patient.lastname = lastname;
@@ -1261,6 +1272,7 @@ socket.on("upd patient", ({ id, name, lastname, gender, birthdate, whereis, isWa
     patient.birthdate = birthdate;
     patient.whereis = whereis;
     patient.isWaiting = isWaiting;
+    patient.idNumber = idNumber;
 
     const el = $('patients-list patient[patient-id="' + id + '"]');
     if (el) {
@@ -1319,6 +1331,7 @@ function fillEditPatientOverlay() {
     $('patient-page overlay .lastname').value = currentPatient.lastname;
     $all('patient-page overlay input[type="radio"]').forEach(input => input.checked = false);
     $('patient-page overlay input[type="radio"][value="' + currentPatient.gender + '"]').checked = true; // will break if more than 3 genders
+    $('patient-page overlay .idNumber').value = currentPatient.idNumber;
 
     const date = getDate(currentPatient.birthdate);
     $('patient-page overlay input[type="date"]').value = fourDigits(date.getUTCFullYear()) + '-' + twoDigits(1+date.getMonth()) + '-' + twoDigits(date.getDate()); // TODO
@@ -1372,6 +1385,7 @@ function displayPatients() {
     currentPatients.slice(currentPage*PAGEN, currentPage*PAGEN+PAGEN).forEach(p => addPatientStructure(p));
     $('patients footer span').innerText = currentPage+1;
     $('patients footer .foot').innerText = `${currentPage*PAGEN+1}-${Math.min((currentPage+1)*PAGEN, total)} of ${total}`;
+    $('patients-list').scrollTo(0, 0);
 }
 
 function fourDigits(num) {
