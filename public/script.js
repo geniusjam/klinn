@@ -188,9 +188,7 @@ $('patients overlay.report box button').onclick = () => { // Create report
     if (until.value < from.value) return alert("The 'until' date cannot be earlier than the 'from' date!");
 
     const fromDate = new Date(from.value.replace(/-/g, "/"));
-    fromDate.setUTCHours(0, 0, 0, 0);
     const untilDate = new Date(until.value.replace(/-/g, "/"));
-    untilDate.setUTCHours(0, 0, 0, 0);
 
     /** @type {Visit[]} */
     const visits = [];
