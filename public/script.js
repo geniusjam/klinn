@@ -108,8 +108,8 @@ socket.once("welcome", data => {
             .pharmacy.push(new Medication(medication))
     );
     data.diagnoses.forEach(diag =>
-        patients.find(p => p.id === diag.patient)
-            .visits.find(visit => visit.id === diag.visit)
+        (patients.find(p => p.id === diag.patient)
+            .visits.find(visit => visit.id === diag.visit) || [])
             .diagnoses.push(new Diagnosis(diag))
     );
     for (const key in data.history) {

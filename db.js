@@ -199,12 +199,14 @@ const init = async () => {
     async function deleteVisit(id, patient) {
         await db.run("DELETE FROM visits WHERE patient = ? AND id = ?", patient, id);
         await db.run("DELETE FROM pharmacy WHERE patient = ? AND visit = ?", patient, id);
+        await db.run("DELETE FROM diagnoses WHERE patient = ? AND visit = ?", patient, id);
     }
 
     async function deletePatient(patient) {
         await db.run("DELETE FROM patients WHERE id = ?", patient);
         await db.run("DELETE FROM visits WHERE patient = ?", patient);
         await db.run("DELETE FROM pharmacy WHERE patient = ?", patient);
+        await db.run("DELETE FROM diagnoses WHERE patient = ?", patient);
 
         await db.run("DELETE FROM history_medical WHERE patient = ?", patient);
         await db.run("DELETE FROM history_surgical WHERE patient = ?", patient);
